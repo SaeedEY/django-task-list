@@ -14,7 +14,7 @@ class TaskSchema(Schema):
     created : str  = Now()
     
 class AuthenticateSchema(Schema):
-    user_uuid: str
+    uuid: str
     token: str
 
 # ERROR SCHEMA

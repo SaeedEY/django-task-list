@@ -36,7 +36,6 @@ class Task(models.Model):
 
 class UserBucket(models.Model):
     user = models.ForeignKey(User(), on_delete=models.PROTECT)
-    password = models.TextField(max_length= 64)
     bucket = models.ForeignKey("Bucket", on_delete=models.PROTECT)
     active = models.BooleanField(db_default=True)
     created = models.DateTimeField(db_default=Now(),editable=False)
