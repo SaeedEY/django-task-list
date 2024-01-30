@@ -15,7 +15,7 @@ def intro(request):
 
 @api.post('/authenticate', response= MessageSchema)
 def login(request, data: AuthenticateSchema):
-    return 
+    return views.authentication(request, data)
 
 @api.get('/tasks', response=TaskSchema)
 def tasks_index(request):
