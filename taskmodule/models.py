@@ -8,12 +8,12 @@ from django.utils.translation import gettext_lazy as _
 class Subscriber(AbstractUser):
     class Role(models.TextChoices):
         GUEST = "GST", _('Guest')
-        SUBSCRIBER = "SUB", _('Subsriber')
+        USER = "SUB", _('Subsriber')
         ADMIN = "ADM", _('Admin')
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=64, null=False)
     family = models.CharField(max_length=64, null=False)
-    role = models.CharField(max_length=3, choices=Role, db_default= Role.GUEST)
+    role = models.CharField(max_length=3, choices=Role, db_default= Role.USER)
     email = models.EmailField(max_length=64, null=False, unique=True)
     token = models.TextField(max_length=64) # for temp Authentication without credentials
     # password = models.CharField(max_length=64, null=False)
