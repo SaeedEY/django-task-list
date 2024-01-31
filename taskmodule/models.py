@@ -15,6 +15,7 @@ class Subscriber(AbstractUser):
     family = models.CharField(max_length=64, null=False)
     role = models.CharField(max_length=3, choices=Role, db_default= Role.GUEST)
     email = models.EmailField(max_length=64, null=False, unique=True)
+    token = models.TextField(max_length=64) # for temp Authentication without credentials
     # password = models.CharField(max_length=64, null=False)
     active = models.BooleanField(db_default=True)
     created = models.DateTimeField(db_default=Now(),editable=False)

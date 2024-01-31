@@ -13,8 +13,11 @@ class TaskSchema(Schema):
     active : bool = True
     created : str  = Now()
     
+class PreAuthenticateSchema(Schema):
+    username: str
+    credential: str
+
 class AuthenticateSchema(Schema):
-    uuid: str
     token: str
 
 # ERROR SCHEMA

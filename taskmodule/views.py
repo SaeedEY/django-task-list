@@ -7,6 +7,8 @@ from django.core.exceptions import ValidationError
 # from .schemas import MessageSchemaSchema
 # from .schemas import TaskSchema
 
+# LOGGING KETWORD REFERENCE https://sematext.com/blog/logging-levels/
+
 # Create your views here.
 def intro(request):
     response = {'status':200,'message':{}} # Should be moved to something more enhanced structure
@@ -21,19 +23,37 @@ def intro(request):
 def authentication(request, request_data=None):
     ## TODO - A CSRF or Capcha must be checked here
     try:
+        assert request_data.token, "Null token is not allowed" # Informatic
         sub = Subscriber.objects.filter( \
-            Q(username=request_data.uuid) \
-            # | Q(id=request_data.uuid) \
+            Q(token=request_data.token) \
+            # | Q(id=request_data.username) \
             ).first()
-        assert sub != None , "User '%s' not found" % request_data.uuid # Informatic
-        assert sub.active , "User '%s' not active" % request_data.uuid # Informatic
+        assert sub != None , "Token '%s' invalid" % request_data.token # Informatic
+        assert sub.active , "Subs token '%s' not active" % request_data.token # Informatic
     except ValidationError as err:
-        print("Invalid UUID '%s' entered" % request_data.uuid) # Error Logging purpose
+        print("Invalid Token '%s' entered" % request_data.token) # Error Logging purpose
         return False
     except AssertionError as err:
         print(err) # Info Logging purpose
         return False
-    return sub.check_password(request_data.token) # it's awful way ;D 
+    return True
+
+def pre_authentication(request, request_data=None):
+    ## TODO - A CSRF or Capcha must be checked here
+    try:
+        sub = Subscriber.objects.filter( \
+            Q(username=request_data.username) \
+            # | Q(id=request_data.username) \
+            ).first()
+        assert sub != None , "Subs '%s' not found" % request_data.username # Informatic
+        assert sub.active , "Subs '%s' not active" % request_data.username # Informatic
+    except ValidationError as err:
+        print("Invalid Subs '%s' entered" % request_data.username) # Error Logging purpose
+        return False
+    except AssertionError as err:
+        print(err) # Info Logging purpose
+        return False
+    return sub.check_password(request_data.credential)
 
 ##############################################################################
 ## TASKs - supposed to be moved to somewhere more sctructured in refactor :D

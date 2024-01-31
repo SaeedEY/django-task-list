@@ -1,6 +1,7 @@
+from typing import Union
 from ninja import NinjaAPI
 from ninja.errors import ValidationError, HttpError
-from .schemas import TaskSchema, MessageSchema, AuthenticateSchema
+from .schemas import TaskSchema, MessageSchema, AuthenticateSchema, PreAuthenticateSchema
 from . import views
 
 api = NinjaAPI()
@@ -14,10 +15,12 @@ def intro(request):
     return views.intro(request)
 
 @api.post('/authenticate', response= MessageSchema)
-def login(request, data: AuthenticateSchema):
-    if not views.authentication(request, data): # Supposed to moved in some other layers 
-        return MessageSchema(status='403', message='Access denied !')
-    return MessageSchema(status='200', message='Login authorized !')
+def login(request, data: Union[AuthenticateSchema, PreAuthenticateSchema]):
+    if (isinstance(data, AuthenticateSchema) and views.authentication(request, data)) \
+      or (isinstance(data, PreAuthenticateSchema) and views.pre_authentication(request, data)) :
+        return MessageSchema(status='200', message='Login authorized !')
+    return MessageSchema(status='403', message='Access denied !')
+    
 
 @api.get('/tasks', response=TaskSchema)
 def tasks_index(request):
