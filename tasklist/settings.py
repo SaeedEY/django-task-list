@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # 'taskmodule',
     'taskmodule.apps.TaskmoduleConfig'
 ]
 
@@ -99,6 +100,10 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+# Tasklist's Customer User Model 
+
+AUTH_USER_MODEL = 'taskmodule.Subscriber'
 
 
 # Internationalization
