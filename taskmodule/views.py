@@ -1,8 +1,9 @@
 import json
 # from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
-# from django.db.models import F
-from .models import Task
+from django.db.models import Q
+from .models import Task, Subscriber
+from django.core.exceptions import ValidationError
 # from .schemas import MessageSchemaSchema
 # from .schemas import TaskSchema
 
@@ -16,11 +17,23 @@ def intro(request):
 ## Login - supposed to be moved to somewhere more sctructured in refactor :D
 ##############################################################################
 
-# Should be covered by associate table and expiring session tokens
+# Should be covered by association table and expiring session tokens
 def authentication(request, request_data=None):
-    
-    user = await User.objects.filter(id=request_data.uuid).afirst()
-    return request_data.token == password # it's awful way ;D 
+    ## TODO - A CSRF or Capcha must be checked here
+    try:
+        sub = Subscriber.objects.filter( \
+            Q(username=request_data.uuid) \
+            # | Q(id=request_data.uuid) \
+            ).first()
+        assert sub != None , "User '%s' not found" % request_data.uuid # Informatic
+        assert sub.active , "User '%s' not active" % request_data.uuid # Informatic
+    except ValidationError as err:
+        print("Invalid UUID '%s' entered" % request_data.uuid) # Error Logging purpose
+        return False
+    except AssertionError as err:
+        print(err) # Info Logging purpose
+        return False
+    return sub.check_password(request_data.token) # it's awful way ;D 
 
 ##############################################################################
 ## TASKs - supposed to be moved to somewhere more sctructured in refactor :D
@@ -30,7 +43,8 @@ def authentication(request, request_data=None):
 def tasks_index(request):
     response = {'status':200,'message':{}} 
     response['message'] = "You got it !"
-    response['result'] =  [ task for task in Task.objects.filter(owner=).only('id','name','description','content','created').values()]
+    owner = 1 # TODO - obtain the current loged in user's ID
+    response['result'] =  [ task for task in Task.objects.filter(owner=owner).only('id','name','description','content','created').values()]
     return JsonResponse(response)
 
 def task_add(request, request_data=None):

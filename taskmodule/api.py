@@ -15,7 +15,9 @@ def intro(request):
 
 @api.post('/authenticate', response= MessageSchema)
 def login(request, data: AuthenticateSchema):
-    return views.authentication(request, data)
+    if not views.authentication(request, data): # Supposed to moved in some other layers 
+        return MessageSchema(status='403', message='Access denied !')
+    return MessageSchema(status='200', message='Login authorized !')
 
 @api.get('/tasks', response=TaskSchema)
 def tasks_index(request):
