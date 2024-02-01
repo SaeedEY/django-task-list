@@ -43,6 +43,7 @@ class Task(models.Model):
     active = models.BooleanField(db_default=True)
     created = models.DateTimeField(db_default=Now(),editable=False)
 
+# Bucket cross users being shared
 class UserBucket(models.Model):
     user = models.ForeignKey(Subscriber, on_delete=models.PROTECT)
     bucket = models.ForeignKey("Bucket", on_delete=models.PROTECT)
