@@ -4,16 +4,15 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth import authenticate as django_authenticate, login as django_login
 from django.http import HttpResponse, JsonResponse
 from django.db.models import Q
-from .models import Task, Subscriber
-# from .schemas import MessageSchemaSchema
+from .models import Task, Bucket, Subscriber
+from .schemas import MessageSchema
 # from .schemas import TaskSchema
 
 # LOGGING KETWORD REFERENCE https://sematext.com/blog/logging-levels/
 
 # Create your views here.
 def intro(request):
-    response = {'status':200,'message':{}} # Should be moved to something more enhanced structure
-    response['message'] = "You got it !"
+    response = MessageSchema(message="You got it !").model_dump()
     return JsonResponse(response)
 
 ##############################################################################
@@ -64,16 +63,38 @@ def pre_authentication(request, request_data=None):
 ##############################################################################
 
 # Should be moved to something more enhanced structure
-def tasks_index(request):
-    response = {'status':200,'message':{}} 
-    response['message'] = "You got it !"
-    owner = 1 # TODO - obtain the current loged in user's ID
-    response['result'] =  [ task for task in Task.objects.filter(owner=owner).only('id','name','description','content','created').values()]
-    return JsonResponse(response)
+def tasks_index(request, owner: Subscriber = None):
+    response = MessageSchema()
+    try:
+        owner = owner or request.user or None
+        assert owner, "Task index subs is '%s'" % owner # Informatic
+        response.result =  [ task for task in Task.objects.filter(owner=owner).only('id','name','description','content','created').values()]
+    except AssertionError as err:
+        response.status = 403 
+        response.message = "Access forbbiden !" 
+        print(err) # Info Logging purpose
+    except Exception as err:
+        response.status = 500 
+        response.message = "Internal server error !"
+        print(err)
+    return JsonResponse(response.model_dump())
 
 def task_add(request, request_data=None):
     response = {'status':200,'message':{}} # Should be moved to something more enhanced structure
-    task = Task(name = request_data.name, description = request_data.description, owner= request.user, bucket= request_data.bucket, content= request_data.bucket) 
+    # bucket = # TODO - make new on none exist or find the only or raise error
+    task = Task(name = request_data.name, description = request_data.description, owner= request.user, bucket= request_data.bucket, content= request_data.content) 
     task.save()
+    response['message'] = "You got it !"
+    return JsonResponse(response)
+
+##############################################################################
+## BUCKETs - supposed to be moved to somewhere more sctructured in refactor :D
+##############################################################################
+
+def bucket_add(request, request_data=None):
+    response = {'status':200,'message':{}} # Should be moved to something more enhanced structure
+    # bucket = # TODO - make new on none exist or find the only or raise error
+    bucket = Bucket(name = request_data.name, description = request_data.description, owner= request.user)
+    bucket.save()
     response['message'] = "You got it !"
     return JsonResponse(response)
