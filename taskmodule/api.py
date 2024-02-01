@@ -2,7 +2,7 @@ from typing import Union
 from ninja import NinjaAPI
 from ninja.errors import ValidationError, HttpError
 from django.http import JsonResponse
-from .schemas import TaskSchema, MessageSchema, AuthenticateSchema, PreAuthenticateSchema
+from .schemas import TaskSchema, BucketSchema, MessageSchema, AuthenticateSchema, PreAuthenticateSchema
 from . import views
 
 api = NinjaAPI()
@@ -13,7 +13,7 @@ api = NinjaAPI()
 
 @api.get('/', response=TaskSchema)
 def intro(request):
-    return views.intro(request)
+    return JsonResponse( views.intro(request) )
 
 @api.post('/authenticate', response= MessageSchema)
 def login(request, data: Union[AuthenticateSchema, PreAuthenticateSchema]):
@@ -35,7 +35,19 @@ def tasks_index(request):
     return JsonResponse(views.tasks_index(request))
 
 @api.post('/task/new', response= MessageSchema)
-def task_add(request , data: MessageSchema):
+def task_add(request , data: TaskSchema):
     if not request.user.is_authenticated:   # Supposed to moved in some other layers 
         return MessageSchema(status='403', message='Access denied !')
     return JsonResponse(views.task_add(request, data))
+
+@api.get('/buckets', response=MessageSchema)
+def buckets_index(request):
+    if not request.user.is_authenticated:   # Supposed to moved in some other layers 
+        return MessageSchema(status='403', message='Access denied !')
+    return JsonResponse(views.buckets_index(request))
+
+@api.post('/bucket/new', response= MessageSchema)
+def task_add(request , data: BucketSchema):
+    if not request.user.is_authenticated:   # Supposed to moved in some other layers 
+        return MessageSchema(status='403', message='Access denied !')
+    return JsonResponse(views.bucket_add(request, data))

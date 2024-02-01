@@ -1,10 +1,11 @@
 import json
 # from django.shortcuts import render
 from django.core.exceptions import ValidationError
+from django.db.utils import IntegrityError
 from django.contrib.auth import authenticate as django_authenticate, login as django_login, logout as django_logout
 from django.db.models import Q
 from .models import Task, Bucket, Subscriber
-from .schemas import MessageSchema
+from .schemas import MessageSchema, BucketSchema
 # from .schemas import TaskSchema
 
 # LOGGING KETWORD REFERENCE https://sematext.com/blog/logging-levels/
@@ -12,7 +13,7 @@ from .schemas import MessageSchema
 # Create your views here.
 def intro(request):
     response = MessageSchema(message="You got it !").model_dump()
-    return JsonResponse(response)
+    return response
 
 ##############################################################################
 ## Login - supposed to be moved to somewhere more sctructured in refactor :D
@@ -63,7 +64,7 @@ def opt_out(request):
     try:
         return django_logout(request)
     except Exception as err:
-        print("Logout failed due '%s'"%str(err))
+        print("Logout failed due '%s'"%str(err)) # Info Logging purpose
     return False
 
 ##############################################################################
@@ -74,32 +75,53 @@ def opt_out(request):
 def tasks_index(request):
     response = MessageSchema()
     try:
-        response.result =  [ task for task in Task.objects.filter(owner=request.user).only('id','name','description','content','created').values()]
+        response.result =  [ task for task in Task.objects.filter(owner=request.user, active=True).only('id','name','description','content','created').values()]
     except Exception as err:
         response.status = 500 
         response.message = "Internal server error !"
-        print(err)
+        print(err) # Info Logging purpose
     return response.model_dump()
 
 def task_add(request, request_data=None):
     response = MessageSchema()
     try:
-        bucket = 1 # TODO - get input bucket and find or raise error
+        bucket = Bucket.objects.get(id=request_data.bucket, owner=request.user).first()
         task = Task(name = request_data.name, description = request_data.description, owner= request.user, bucket= bucket, content= request_data.content) 
         task.save()
-        response.message = "You got it !"
-    except AssertionError as err:
-        print(err) # Info Logging purpose
+        response.result = [task]
+    except Bucket.DoesNotExist as err:
+        response.status = 400
+        response.message = "Bucket '%s' not found !" % request_data.bucket
+        print (err) # Info Logging purpose
     return response.model_dump()
 
 ##############################################################################
 ## BUCKETs - supposed to be moved to somewhere more sctructured in refactor :D
 ##############################################################################
 
+# Should be moved to something more enhanced structure
+def buckets_index(request):
+    response = MessageSchema()
+    try:
+        response.result =  [ bucket for bucket in Bucket.objects.filter(owner=request.user).only('id','name','description','created').values()]
+    except Exception as err:
+        response.status = 500 
+        response.message = "Internal server error !"
+        print(err) # Info Logging purpose
+    return response.model_dump()
+
 def bucket_add(request, request_data=None):
-    response = {'status':200,'message':{}} # Should be moved to something more enhanced structure
-    # bucket = # TODO - make new on none exist or find the only or raise error
-    bucket = Bucket(name = request_data.name, description = request_data.description, owner= request.user)
-    bucket.save()
-    response['message'] = "You got it !"
-    return JsonResponse(response)
+    response = MessageSchema()
+    try:
+        bucket = Bucket(name = request_data.name, description = request_data.description, owner= request.user) 
+        bucket.save()
+        response.result = [bucket.to_dict()]
+    except IntegrityError as err:
+        response.status = 400
+        response.message = "Bucket name duplicated !"
+        print(err) # Info Logging purpose
+    # except Bucket.DoesNotExist as err:
+    #     response.status = 406
+    #     response.message = "Bucket '%s' not found !" % request_data.bucket
+    #     print (err)
+    return response.model_dump()

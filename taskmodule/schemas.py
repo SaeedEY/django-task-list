@@ -8,8 +8,16 @@ class TaskSchema(Schema):
     name : str
     description : str
     # owner : str
-    bucket : str
+    bucket : uuid.UUID
     content : str
+    active : bool = True
+    created : str  = Now()
+
+class BucketSchema(Schema):
+    # id : uuid.UUID
+    name : str
+    description : str
+    # owner : str
     active : bool = True
     created : str  = Now()
     
