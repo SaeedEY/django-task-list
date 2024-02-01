@@ -23,4 +23,5 @@ class AuthenticateSchema(Schema):
 # ERROR SCHEMA
 class MessageSchema(Schema):
     status: int = 200
-    message: str
+    message: str = "You got it !"
+    result: list = []
