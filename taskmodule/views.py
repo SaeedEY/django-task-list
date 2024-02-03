@@ -4,7 +4,8 @@ from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
 from django.contrib.auth import authenticate as django_authenticate, login as django_login, logout as django_logout
 from django.db.models import Q
-from .models import Task, Bucket, Subscriber
+from django.db import transaction
+from .models import Task, Bucket, Subscriber, SubscriberBucket
 from .schemas import MessageSchema, BucketSchema
 # from .schemas import TaskSchema
 
@@ -73,6 +74,7 @@ def opt_out(request):
 
 # Should be moved to something more enhanced structure
 def tasks_index(request):
+    # TODO - some enhancement on specific exceptions and also if need something with active status
     response = MessageSchema()
     try:
         response.result =  [ task for task in Task.objects.filter(owner=request.user, active=True).only('id','name','description','content','created').values()]
@@ -83,12 +85,14 @@ def tasks_index(request):
     return response.model_dump()
 
 def task_add(request, request_data=None):
+    # TODO - some enhancement on specific exceptions and also if need something with active status
     response = MessageSchema()
     try:
-        bucket = Bucket.objects.get(id=request_data.bucket, owner=request.user).first()
-        task = Task(name = request_data.name, description = request_data.description, owner= request.user, bucket= bucket, content= request_data.content) 
-        task.save()
-        response.result = [task]
+        given_bucket = Bucket.objects.get(id=request_data.bucket, owner=request.user)
+        with transaction.atomic():
+            new_task = Task.objects.create(name = request_data.name, description = request_data.description, owner= request.user, bucket= bucket, content= request_data.content) 
+            new_bucket = BucketTask.objects.create(task = new_task, bucket = given_bucket) 
+        response.result = [new_task]
     except Bucket.DoesNotExist as err:
         response.status = 400
         response.message = "Bucket '%s' not found !" % request_data.bucket
@@ -101,6 +105,7 @@ def task_add(request, request_data=None):
 
 # Should be moved to something more enhanced structure
 def buckets_index(request):
+    # TODO - some enhancement on specific exceptions and also if need something with active status
     response = MessageSchema()
     try:
         response.result =  [ bucket for bucket in Bucket.objects.filter(owner=request.user).only('id','name','description','created').values()]
@@ -111,11 +116,13 @@ def buckets_index(request):
     return response.model_dump()
 
 def bucket_add(request, request_data=None):
+    # TODO - some enhancement on specific exceptions and also if need something with active status
     response = MessageSchema()
     try:
-        bucket = Bucket(name = request_data.name, description = request_data.description, owner= request.user) 
-        bucket.save()
-        response.result = [bucket.to_dict()]
+        with transaction.atomic():
+            new_bucket = Bucket.objects.create(name = request_data.name, description = request_data.description, owner= request.user)
+            new_user_bucket = SubscriberBucket.objects.create(subs = request.user, bucket = new_bucket) 
+        response.result = [new_bucket.to_dict()]
     except IntegrityError as err:
         response.status = 400
         response.message = "Bucket name duplicated !"
