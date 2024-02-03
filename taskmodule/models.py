@@ -56,20 +56,30 @@ class Task(models.Model):
     # owner = models.UUIDField(null=False,editable=False)
     owner = models.ForeignKey(Subscriber, on_delete=models.PROTECT)
     # bucket = models.UUIDField(null=False)
-    bucket = models.ForeignKey("Bucket", on_delete=models.PROTECT)
+    bucket = models.ForeignKey(Bucket, on_delete=models.PROTECT)
     content = models.TextField(max_length=2048,null=False)
     active = models.BooleanField(db_default=True)
     created = models.DateTimeField(db_default=Now(),editable=False)
 
 # Bucket cross users being shared
-class UserBucket(models.Model):
-    user = models.ForeignKey(Subscriber, on_delete=models.PROTECT)
-    bucket = models.ForeignKey("Bucket", on_delete=models.PROTECT)
+class SubscriberBucket(models.Model):
+    subs = models.ForeignKey(Subscriber, on_delete=models.PROTECT)
+    bucket = models.ForeignKey(Bucket, on_delete=models.PROTECT)
     active = models.BooleanField(db_default=True)
     created = models.DateTimeField(db_default=Now(),editable=False)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['subs','bucket'], name="%(app_label)s_%(class)s_unique")
+        ]
+
 class BucketTask(models.Model):
-    task = models.ForeignKey("Task", on_delete=models.PROTECT)
-    bucket = models.ForeignKey("Bucket", on_delete=models.PROTECT)
+    task = models.ForeignKey(Task, on_delete=models.PROTECT)
+    bucket = models.ForeignKey(Bucket, on_delete=models.PROTECT)
     active = models.BooleanField(db_default=True)
     created = models.DateTimeField(db_default=Now(),editable=False)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['task','bucket'], name="%(app_label)s_%(class)s_unique")
+        ]
