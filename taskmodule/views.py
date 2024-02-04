@@ -5,8 +5,8 @@ from django.db.utils import IntegrityError
 from django.contrib.auth import authenticate as django_authenticate, login as django_login, logout as django_logout
 from django.db.models import Q
 from django.db import transaction
-from .models import Task, Bucket, Subscriber, SubscriberBucket
-from .schemas import MessageSchema, BucketSchema
+from .models import Task, Bucket, Subscriber, SubscriberBucket, BucketTask
+from .schemas import MessageSchema, BucketSchema, SubscriberSchema
 # from .schemas import TaskSchema
 
 # LOGGING KETWORD REFERENCE https://sematext.com/blog/logging-levels/
@@ -23,7 +23,7 @@ def intro(request):
 # Should be covered by association table and expiring session tokens
 def authentication(request, request_data=None):
     ## TODO - A CSRF or Capcha must be checked here
-    ## TODO - flush session on various authentication circumstances
+    ## TODO - flush session on various authentication circumstances (?)
     try:
         assert request_data.token, "Null token is not allowed" # Informatic
         sub = Subscriber.objects.filter( \
@@ -31,7 +31,7 @@ def authentication(request, request_data=None):
             # | Q(id=request_data.username) \
             ).first()
         assert sub != None , "Token '%s' invalid" % request_data.token # Informatic
-        assert sub.active , "Subs token '%s' not active" % request_data.token # Informatic
+        assert sub.is_active , "Subs token '%s' not active" % request_data.token # Informatic
     except ValidationError as err:
         print("Invalid Token '%s' entered" % request_data.token) # Error Logging purpose
         return False
@@ -40,14 +40,25 @@ def authentication(request, request_data=None):
         return False
     return True
 
+def registration(request, request_data):
+    ## TODO - A CSRF or Capcha must be checked here
+    try:
+        new_subs = Subscriber(**request_data.dict())
+        new_subs.set_password(request_data.password)
+        print(new_subs.save())
+        return True
+    except ValidationError as err:
+        print("Invalid Subscriber '%s' entered" % request_data) # Error Logging purpose
+    except AssertionError as err:
+        print(err)
+    except IntegrityError as err:
+        print(err)
+    return False
+    
 def pre_authentication(request, request_data=None):
     ## TODO - A CSRF or Capcha must be checked here
     ## TODO - flush session on various login circumstances
     try:
-        # sub = Subscriber.objects.filter( \
-        #     Q(username=request_data.username) \
-        #     # | Q(id=request_data.username) \
-        #     ).first()
         subs = django_authenticate(request, username=request_data.username, password=request_data.credential)
         assert subs != None , "Subs '%s' not found or login failed" % request_data.username # Informatic
         assert subs.active , "Subs '%s' not active" % request_data.username # Informatic
@@ -58,7 +69,6 @@ def pre_authentication(request, request_data=None):
     except AssertionError as err:
         print(err) # Info Logging purpose
         return False
-    # return sub.check_password(request_data.credential)
     return True
 
 def opt_out(request):
@@ -77,7 +87,9 @@ def tasks_index(request):
     # TODO - some enhancement on specific exceptions and also if need something with active status
     response = MessageSchema()
     try:
-        response.result =  [ task for task in Task.objects.filter(owner=request.user, active=True).only('id','name','description','content','created').values()]
+        # TODO subscrivers given_bucket.buckettask_set.all() => response.result
+        # response.result =  [ task for task in Task.objects.filter(owner=request.user, active=True).only('id','name','description','content','created').values()]
+        response.result =  [ task for task in SubscriberBucket.objects.get(subs = request.user).bucket.task_set.only('id','name','description','content','created').values()]
     except Exception as err:
         response.status = 500 
         response.message = "Internal server error !"
@@ -90,9 +102,13 @@ def task_add(request, request_data=None):
     try:
         given_bucket = Bucket.objects.get(id=request_data.bucket, owner=request.user)
         with transaction.atomic():
-            new_task = Task.objects.create(name = request_data.name, description = request_data.description, owner= request.user, bucket= bucket, content= request_data.content) 
-            new_bucket = BucketTask.objects.create(task = new_task, bucket = given_bucket) 
-        response.result = [new_task]
+            new_task = Task.objects.create(name = request_data.name, description = request_data.description, owner= request.user, bucket= given_bucket, content= request_data.content) 
+            new_bucket_task = BucketTask.objects.create(task = new_task, bucket = given_bucket) 
+        response.result = [new_task.to_dict()]
+    except IntegrityError as err:
+        response.status = 400
+        response.message = "Task name duplicated !"
+        print(err) # Info Logging purpose
     except Bucket.DoesNotExist as err:
         response.status = 400
         response.message = "Bucket '%s' not found !" % request_data.bucket

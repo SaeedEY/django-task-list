@@ -2,7 +2,7 @@ from typing import Union
 from ninja import NinjaAPI
 from ninja.errors import ValidationError, HttpError
 from django.http import JsonResponse
-from .schemas import TaskSchema, BucketSchema, MessageSchema, AuthenticateSchema, PreAuthenticateSchema
+from .schemas import TaskSchema, BucketSchema, MessageSchema, AuthenticateSchema, PreAuthenticateSchema, SubscriberSchema
 from . import views
 
 api = NinjaAPI()
@@ -19,13 +19,19 @@ def intro(request):
 def login(request, data: Union[AuthenticateSchema, PreAuthenticateSchema]):
     if (isinstance(data, AuthenticateSchema) and views.authentication(request, data)) \
       or (isinstance(data, PreAuthenticateSchema) and views.pre_authentication(request, data)) :
-        return MessageSchema(status='200', message='Login authorized !')
+        return MessageSchema(message='Login authorized !')
     return MessageSchema(status='403', message='Access denied !')
+
+@api.post('/registration', response= MessageSchema)
+def register(request, data: SubscriberSchema):
+    if not request.user.is_authenticated and views.registration(request, data):
+        return MessageSchema(message='Registration successfully !')
+    return MessageSchema(status='403', message='Registration failed or unathorized access !')
 
 @api.get('/opt_out', response= MessageSchema)
 def logout(request):
     if views.opt_out(request):
-        return MessageSchema(status='200', message='Logout successfuly !')
+        return MessageSchema(message='Logout successfuly !')
     return MessageSchema(status='403', message='Access denied !')
 
 @api.get('/tasks', response=MessageSchema)
