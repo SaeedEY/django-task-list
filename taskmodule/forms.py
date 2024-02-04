@@ -5,7 +5,7 @@ from .models import Subscriber
 class SubscriberCreationForm(UserCreationForm):
     class Meta:
         model = Subscriber
-        fields = ("active", )
+        fields = ("is_active", )
 
     #     name = models.CharField(max_length=64, null=False)
     # family = models.CharField(max_length=64, null=False)
@@ -18,4 +18,4 @@ class SubscriberChangeForm(UserChangeForm):
 
     class Meta:
         model = Subscriber
-        fields = ("active", )
+        fields = ("is_active", )

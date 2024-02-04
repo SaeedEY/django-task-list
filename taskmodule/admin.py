@@ -7,12 +7,9 @@ class SubscriberAdmin(UserAdmin):
     add_form = SubscriberCreationForm
     form = SubscriberChangeForm
     model = Subscriber
-    list_display = ["id", "email", "username", "active"]
+    list_display = ["id", "email", "username", "is_active"]
 
 admin.site.register(Subscriber, SubscriberAdmin)
 
 admin.site.register(Bucket)
 admin.site.register(Task)
-
-
-# Register your models here.
