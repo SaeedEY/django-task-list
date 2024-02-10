@@ -27,6 +27,7 @@ def registration(request, payload=None) -> bool:
         with transaction.atomic():
             new_subs = Subscriber(**payload.dict())
             new_subs.set_password(payload.password)
+            new_subs.save() # ?? 
         return True
     except ValidationError as err:
         print("Invalid Subscriber '%s' entered" % payload) # Error Logging purpose
