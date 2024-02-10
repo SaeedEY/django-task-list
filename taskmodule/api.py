@@ -16,9 +16,14 @@ def intro(request):
     return JsonResponse( views.intro(request) )
 
 @api.post('/authenticate', response= ResponseOut)
-def login(request, payload: Union[AuthenticateIn, PreAuthenticateIn]):
-    if (isinstance(payload, AuthenticateIn) and views.authentication(request, payload)) \
-      or (isinstance(payload, PreAuthenticateIn) and views.pre_authentication(request, payload)) :
+def authenticate(request, payload: AuthenticateIn):
+    if views.authentication(request, payload) :
+        return ResponseOut(message='Authentication authorized !')
+    return ResponseOut(status='403', message='Access denied !')
+
+@api.post('/login', response= ResponseOut)
+def login(request, payload: PreAuthenticateIn):
+    if views.pre_authentication(request, payload) :
         return ResponseOut(message='Login authorized !')
     return ResponseOut(status='403', message='Access denied !')
 
