@@ -5,73 +5,86 @@ from django.db.utils import IntegrityError
 from django.contrib.auth import authenticate as django_authenticate, login as django_login, logout as django_logout
 from django.db.models import Q
 from django.db import transaction
+from typing import List
 from .models import Task, Bucket, Subscriber, SubscriberBucket, BucketTask
-from .schemas import MessageSchema, BucketSchema, SubscriberSchema
-# from .schemas import TaskSchema
+from .schemas import ResponseOut, BucketIn, RegistrationIn, SubscriberOut
+# from .schemas import TaskIn
 
 # LOGGING KETWORD REFERENCE https://sematext.com/blog/logging-levels/
 
 # Create your views here.
 def intro(request):
-    response = MessageSchema(message="You got it !").model_dump()
+    response = ResponseOut(message="You got it !").model_dump()
     return response
 
 ##############################################################################
-## Login - supposed to be moved to somewhere more sctructured in refactor :D
+## Subscribers - supposed to be moved to somewhere more sctructured in refactor :D
 ##############################################################################
 
-# Should be covered by association table and expiring session tokens
-def authentication(request, request_data=None):
-    ## TODO - A CSRF or Capcha must be checked here
-    ## TODO - flush session on various authentication circumstances (?)
-    try:
-        assert request_data.token, "Null token is not allowed" # Informatic
-        sub = Subscriber.objects.filter( \
-            Q(token=request_data.token) \
-            # | Q(id=request_data.username) \
-            ).first()
-        assert sub != None , "Token '%s' invalid" % request_data.token # Informatic
-        assert sub.is_active , "Subs token '%s' not active" % request_data.token # Informatic
-    except ValidationError as err:
-        print("Invalid Token '%s' entered" % request_data.token) # Error Logging purpose
-        return False
-    except AssertionError as err:
-        print(err) # Info Logging purpose
-        return False
-    return True
-
-def registration(request, request_data):
+def registration(request, payload=None) -> bool:
     ## TODO - A CSRF or Capcha must be checked here
     try:
-        new_subs = Subscriber(**request_data.dict())
-        new_subs.set_password(request_data.password)
-        print(new_subs.save())
+        with transaction.atomic():
+            new_subs = Subscriber(**payload.dict())
+            new_subs.set_password(payload.password)
         return True
     except ValidationError as err:
-        print("Invalid Subscriber '%s' entered" % request_data) # Error Logging purpose
+        print("Invalid Subscriber '%s' entered" % payload) # Error Logging purpose
     except AssertionError as err:
         print(err)
     except IntegrityError as err:
         print(err)
     return False
-    
-def pre_authentication(request, request_data=None):
-    ## TODO - A CSRF or Capcha must be checked here
-    ## TODO - flush session on various login circumstances
+
+def subscribers_list(request, payload=None) -> List:
     try:
-        subs = django_authenticate(request, username=request_data.username, password=request_data.credential)
-        assert subs != None , "Subs '%s' not found or login failed" % request_data.username # Informatic
-        assert subs.active , "Subs '%s' not active" % request_data.username # Informatic
-        django_login(request, subs)
+        assert request.user.is_admin, "Access denied !"
+        return Subscriber.objects.all()
+    except AssertionError as err:
+        print(err)
+    except IntegrityError as err:
+        print(err)
+    return []
+
+##############################################################################
+## Authentication - supposed to be moved to somewhere more sctructured in refactor :D
+##############################################################################
+
+# Should be covered by association table and expiring session tokens
+def authentication(request, payload=None) -> bool:
+    ## TODO - A CSRF or Capcha must be checked here
+    ## TODO - flush session on various authentication circumstances (?)
+    try:
+        assert payload.token, "Null token is not allowed" # Informatic
+        sub = Subscriber.objects.filter(token=payload.token)
+        assert sub != None , "Token '%s' invalid" % payload.token # Informatic
+        assert sub.is_active , "Subs token '%s' not active" % payload.token # Informatic
     except ValidationError as err:
-        print("Invalid Subs '%s' entered" % request_data.username) # Error Logging purpose
+        print("Invalid Token '%s' entered" % payload.token) # Error Logging purpose
         return False
     except AssertionError as err:
         print(err) # Info Logging purpose
         return False
     return True
 
-def opt_out(request):
+    
+def pre_authentication(request, payload=None) -> bool:
+    ## TODO - A CSRF or Capcha must be checked here
+    ## TODO - flush session on various login circumstances
+    try:
+        subs = django_authenticate(request, username=payload.username, password=payload.credential)
+        assert subs != None , "Subs '%s' not found or login failed" % payload.username # Informatic
+        assert subs.is_active , "Subs '%s' not active" % payload.username # Informatic
+        django_login(request, subs)
+    except ValidationError as err:
+        print("Invalid Subs '%s' entered" % payload.username) # Error Logging purpose
+        return False
+    except AssertionError as err:
+        print(err) # Info Logging purpose
+        return False
+    return True
+
+def opt_out(request) -> bool:
     try:
         return django_logout(request)
     except Exception as err:
@@ -83,36 +96,41 @@ def opt_out(request):
 ##############################################################################
 
 # Should be moved to something more enhanced structure
-def tasks_index(request):
+def tasks_index(request) -> ResponseOut:
     # TODO - some enhancement on specific exceptions and also if need something with active status
-    response = MessageSchema()
+    response = ResponseOut()
     try:
-        # TODO subscrivers given_bucket.buckettask_set.all() => response.result
-        # response.result =  [ task for task in Task.objects.filter(owner=request.user, active=True).only('id','name','description','content','created').values()]
-        response.result =  [ task for task in SubscriberBucket.objects.get(subs = request.user).bucket.task_set.only('id','name','description','content','created').values()]
+        # TODO - HOW to link from many SubscriberBucket to acheive all tasks to show
+        if SubscriberBucket.objects.filter(subs = request.user, active = True).exists(): 
+            response.result =  [ task for task in SubscriberBucket.objects.filter(subs = request.user).bucket.task_set.only('id','name','description','content','created').values()]
+    except IntegrityError as err:
+        print(err)
     except Exception as err:
         response.status = 500 
         response.message = "Internal server error !"
         print(err) # Info Logging purpose
     return response.model_dump()
 
-def task_add(request, request_data=None):
+def task_add(request, payload=None) -> ResponseOut:
     # TODO - some enhancement on specific exceptions and also if need something with active status
-    response = MessageSchema()
+    response = ResponseOut()
     try:
-        given_bucket = Bucket.objects.get(id=request_data.bucket, owner=request.user)
+        given_bucket = Bucket.objects.get(id=payload.bucket, owner=request.user)
         with transaction.atomic():
-            new_task = Task.objects.create(name = request_data.name, description = request_data.description, owner= request.user, bucket= given_bucket, content= request_data.content) 
+            new_task = Task.objects.create(name = payload.name, description = payload.description, owner= request.user, bucket= given_bucket, content= payload.content) 
             new_bucket_task = BucketTask.objects.create(task = new_task, bucket = given_bucket) 
-        response.result = [new_task.to_dict()]
+            response.result = [new_task.to_dict()]
     except IntegrityError as err:
         response.status = 400
         response.message = "Task name duplicated !"
         print(err) # Info Logging purpose
     except Bucket.DoesNotExist as err:
         response.status = 400
-        response.message = "Bucket '%s' not found !" % request_data.bucket
+        response.message = "Bucket '%s' not found !" % payload.bucket
         print (err) # Info Logging purpose
+    except Exception as err:
+        response.status = 500 
+        response.message = "Internal server error !"
     return response.model_dump()
 
 ##############################################################################
@@ -120,31 +138,35 @@ def task_add(request, request_data=None):
 ##############################################################################
 
 # Should be moved to something more enhanced structure
-def buckets_index(request):
+def buckets_index(request) -> ResponseOut:
     # TODO - some enhancement on specific exceptions and also if need something with active status
-    response = MessageSchema()
+    response = ResponseOut()
     try:
-        response.result =  [ bucket for bucket in Bucket.objects.filter(owner=request.user).only('id','name','description','created').values()]
+        response.result =  [ bucket for bucket in Bucket.objects.filter(owner=request.user, active=True).values_list('name','description','created')]
     except Exception as err:
         response.status = 500 
         response.message = "Internal server error !"
         print(err) # Info Logging purpose
     return response.model_dump()
 
-def bucket_add(request, request_data=None):
+def bucket_add(request, payload=None) -> ResponseOut:
     # TODO - some enhancement on specific exceptions and also if need something with active status
-    response = MessageSchema()
+    response = ResponseOut()
     try:
         with transaction.atomic():
-            new_bucket = Bucket.objects.create(name = request_data.name, description = request_data.description, owner= request.user)
+            new_bucket = Bucket.objects.create(name = payload.name, description = payload.description, owner= request.user)
             new_user_bucket = SubscriberBucket.objects.create(subs = request.user, bucket = new_bucket) 
-        response.result = [new_bucket.to_dict()]
+            response.result = [new_bucket.to_dict()]
     except IntegrityError as err:
         response.status = 400
         response.message = "Bucket name duplicated !"
         print(err) # Info Logging purpose
+    except Exception as err:
+        response.status = 500 
+        response.message = "Internal server error !"
+        print(err) # Info Logging purpose
     # except Bucket.DoesNotExist as err:
     #     response.status = 406
-    #     response.message = "Bucket '%s' not found !" % request_data.bucket
+    #     response.message = "Bucket '%s' not found !" % payload.bucket
     #     print (err)
     return response.model_dump()
