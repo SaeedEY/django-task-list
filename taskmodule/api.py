@@ -33,7 +33,7 @@ def register(request, payload: RegistrationIn):
         return ResponseOut(message='Registration successfully !')
     return ResponseOut(status='403', message='Registration failed or unathorized access !')
 
-@api.get('/opt_out', response= ResponseOut)
+@api.get('/optout', response= ResponseOut)
 def logout(request):
     if views.opt_out(request):
         return ResponseOut(message='Logout successfuly !')
@@ -64,7 +64,7 @@ def buckets_index(request):
     return JsonResponse(views.buckets_index(request))
 
 @api.post('/bucket/new', response= ResponseOut)
-def task_add(request , payload: BucketIn):
+def bucket_add(request , payload: BucketIn):
     if not request.user.is_authenticated:   # Supposed to moved in some other layers 
         return ResponseOut(status='403', message='Access denied !')
     return JsonResponse(views.bucket_add(request, payload))
