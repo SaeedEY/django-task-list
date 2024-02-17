@@ -85,9 +85,10 @@ def pre_authentication(request, payload=None) -> bool:
         return False
     return True
 
-def opt_out(request) -> bool:
+def logout(request) -> bool:
     try:
-        return django_logout(request)
+        django_logout(request)
+        return True
     except Exception as err:
         print("Logout failed due '%s'"%str(err)) # Info Logging purpose
     return False
@@ -102,8 +103,15 @@ def tasks_index(request) -> ResponseOut:
     response = ResponseOut()
     try:
         # TODO - HOW to link from many SubscriberBucket to acheive all tasks to show
-        if SubscriberBucket.objects.filter(subs = request.user, active = True).exists(): 
-            response.result =  [ task for task in SubscriberBucket.objects.filter(subs = request.user).bucket.task_set.only('id','name','description','content','created').values()]
+        subscriber_buckets = SubscriberBucket.objects.filter(subs=request.user, active=True)
+        bucket_ids = [sb.bucket_id for sb in list (subscriber_buckets.select_related())] # Probably need to be moved after next IF in case of `subscriber_buckets` empty ?
+        if not subscriber_buckets.exists() :
+            return response.model_dump()
+        bucket_tasks = BucketTask.objects.filter(bucket__in=bucket_ids)
+        task_ids = [bt.task_id for bt in list (bucket_tasks.select_related())]
+        if not bucket_tasks.exists():
+            return response.model_dump()
+        response.result = [task for task in Task.objects.filter(id__in=task_ids).values_list('id','name','description','content','created')]
     except IntegrityError as err:
         print(err)
     except Exception as err:
@@ -143,7 +151,7 @@ def buckets_index(request) -> ResponseOut:
     # TODO - some enhancement on specific exceptions and also if need something with active status
     response = ResponseOut()
     try:
-        response.result =  [ bucket for bucket in Bucket.objects.filter(owner=request.user, active=True).values_list('name','description','created')]
+        response.result =  [ bucket for bucket in Bucket.objects.filter(owner=request.user, active=True).values_list('id','name','description','created')]
     except Exception as err:
         response.status = 500 
         response.message = "Internal server error !"
