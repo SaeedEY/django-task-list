@@ -14,6 +14,7 @@ from .schemas import ResponseOut, BucketIn, RegistrationIn, SubscriberOut
 
 # Create your views here.
 def intro(request):
+    ## TODO - pass some useful data to homepage for dashboard purpose
     response = ResponseOut(message="You got it !").model_dump()
     return response
 
@@ -22,6 +23,7 @@ def intro(request):
 ##############################################################################
 
 def registration(request, payload=None) -> bool:
+    ## TODO - Change the return function type - NORMALIZATION
     ## TODO - A CSRF or Capcha must be checked here
     try:
         with transaction.atomic():
@@ -38,6 +40,7 @@ def registration(request, payload=None) -> bool:
     return False
 
 def subscribers_list(request, payload=None) -> List:
+    ## TODO - Change the return function type - NORMALIZATION
     try:
         assert request.user.is_admin, "Access denied !"
         return Subscriber.objects.all()
@@ -53,6 +56,7 @@ def subscribers_list(request, payload=None) -> List:
 
 # Should be covered by association table and expiring session tokens
 def authentication(request, payload=None) -> bool:
+    ## TODO - Change the return function type - NORMALIZATION
     ## TODO - A CSRF or Capcha must be checked here
     ## TODO - flush session on various authentication circumstances (?)
     try:
@@ -70,6 +74,7 @@ def authentication(request, payload=None) -> bool:
 
     
 def pre_authentication(request, payload=None) -> bool:
+    ## TODO - Change the return function type - NORMALIZATION
     ## TODO - A CSRF or Capcha must be checked here
     ## TODO - flush session on various login circumstances
     try:
@@ -86,6 +91,9 @@ def pre_authentication(request, payload=None) -> bool:
     return True
 
 def logout(request) -> bool:
+    ## TODO - Change the return function type - NORMALIZATION
+    ## TODO - A CSRF or Capcha must be checked here
+    ## TODO - flush session on various login circumstances
     try:
         django_logout(request)
         return True
@@ -99,10 +107,8 @@ def logout(request) -> bool:
 
 # Should be moved to something more enhanced structure
 def tasks_index(request) -> ResponseOut:
-    # TODO - some enhancement on specific exceptions and also if need something with active status
     response = ResponseOut()
     try:
-        # TODO - HOW to link from many SubscriberBucket to acheive all tasks to show
         subscriber_buckets = SubscriberBucket.objects.filter(subs=request.user, active=True)
         bucket_ids = [sb.bucket_id for sb in list (subscriber_buckets.select_related())] # Probably need to be moved after next IF in case of `subscriber_buckets` empty ?
         if not subscriber_buckets.exists() :
@@ -113,7 +119,7 @@ def tasks_index(request) -> ResponseOut:
             return response.model_dump()
         response.result = [task for task in Task.objects.filter(id__in=task_ids).values_list('id','name','description','content','created')]
     except IntegrityError as err:
-        print(err)
+        print(err) # Info Logging purpose
     except Exception as err:
         response.status = 500 
         response.message = "Internal server error !"
@@ -121,7 +127,6 @@ def tasks_index(request) -> ResponseOut:
     return response.model_dump()
 
 def task_add(request, payload=None) -> ResponseOut:
-    # TODO - some enhancement on specific exceptions and also if need something with active status
     response = ResponseOut()
     try:
         given_bucket = Bucket.objects.get(id=payload.bucket, owner=request.user)
@@ -148,7 +153,6 @@ def task_add(request, payload=None) -> ResponseOut:
 
 # Should be moved to something more enhanced structure
 def buckets_index(request) -> ResponseOut:
-    # TODO - some enhancement on specific exceptions and also if need something with active status
     response = ResponseOut()
     try:
         response.result =  [ bucket for bucket in Bucket.objects.filter(owner=request.user, active=True).values_list('id','name','description','created')]
@@ -159,7 +163,6 @@ def buckets_index(request) -> ResponseOut:
     return response.model_dump()
 
 def bucket_add(request, payload=None) -> ResponseOut:
-    # TODO - some enhancement on specific exceptions and also if need something with active status
     response = ResponseOut()
     try:
         with transaction.atomic():
