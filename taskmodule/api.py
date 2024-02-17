@@ -23,9 +23,9 @@ def authenticate(request, payload: AuthenticateIn):
 
 @api.post('/login', response= ResponseOut)
 def login(request, payload: PreAuthenticateIn):
-    if views.pre_authentication(request, payload) :
+    if not request.user.is_authenticated and views.pre_authentication(request, payload) :
         return ResponseOut(message='Login authorized !')
-    return ResponseOut(status='403', message='Access denied !')
+    return ResponseOut(status='403', message='Login failed or already logged in !')
 
 @api.post('/registration', response= ResponseOut)
 def register(request, payload: RegistrationIn):
@@ -33,11 +33,11 @@ def register(request, payload: RegistrationIn):
         return ResponseOut(message='Registration successfully !')
     return ResponseOut(status='403', message='Registration failed or unathorized access !')
 
-@api.get('/optout', response= ResponseOut)
+@api.get('/logout', response= ResponseOut)
 def logout(request):
-    if views.opt_out(request):
+    if request.user.is_authenticated and views.logout(request):
         return ResponseOut(message='Logout successfuly !')
-    return ResponseOut(status='403', message='Access denied !')
+    return ResponseOut(status='403', message='Access denied or already logged out !')
 
 @api.get('/subscribers', response=ResponseOut)
 def subscribers_list(request):
