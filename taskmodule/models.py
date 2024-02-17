@@ -45,6 +45,9 @@ class Task(models.Model):
     active = models.BooleanField(db_default=True)
     created = models.DateTimeField(db_default=datetime.now(),editable=False)
 
+    def to_dict(self):
+        return model_to_dict(self)
+
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=['name','owner'], name="%(app_label)s_%(class)s_unique")
