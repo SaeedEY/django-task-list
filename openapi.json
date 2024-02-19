@@ -1,0 +1,425 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "NinjaAPI",
+        "version": "1.0.0",
+        "description": ""
+    },
+    "paths": {
+        "/api/": {
+            "get": {
+                "operationId": "taskmodule_api_intro",
+                "summary": "Intro",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TaskIn"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/authenticate": {
+            "post": {
+                "operationId": "taskmodule_api_authenticate",
+                "summary": "Authenticate",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseOut"
+                                }
+                            }
+                        }
+                    }
+                },
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AuthenticateIn"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/api/login": {
+            "post": {
+                "operationId": "taskmodule_api_login",
+                "summary": "Login",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseOut"
+                                }
+                            }
+                        }
+                    }
+                },
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PreAuthenticateIn"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/api/registration": {
+            "post": {
+                "operationId": "taskmodule_api_register",
+                "summary": "Register",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseOut"
+                                }
+                            }
+                        }
+                    }
+                },
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegistrationIn"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/api/logout": {
+            "get": {
+                "operationId": "taskmodule_api_logout",
+                "summary": "Logout",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseOut"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/subscribers": {
+            "get": {
+                "operationId": "taskmodule_api_subscribers_list",
+                "summary": "Subscribers List",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseOut"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/tasks": {
+            "get": {
+                "operationId": "taskmodule_api_tasks_index",
+                "summary": "Tasks Index",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseOut"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/task/new": {
+            "post": {
+                "operationId": "taskmodule_api_task_add",
+                "summary": "Task Add",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseOut"
+                                }
+                            }
+                        }
+                    }
+                },
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TaskIn"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/api/buckets": {
+            "get": {
+                "operationId": "taskmodule_api_buckets_index",
+                "summary": "Buckets Index",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseOut"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/bucket/new": {
+            "post": {
+                "operationId": "taskmodule_api_bucket_add",
+                "summary": "Bucket Add",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseOut"
+                                }
+                            }
+                        }
+                    }
+                },
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BucketIn"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "TaskIn": {
+                "additionalProperties": false,
+                "properties": {
+                    "name": {
+                        "title": "Name",
+                        "type": "string"
+                    },
+                    "description": {
+                        "title": "Description",
+                        "type": "string"
+                    },
+                    "bucket": {
+                        "format": "uuid",
+                        "title": "Bucket",
+                        "type": "string"
+                    },
+                    "content": {
+                        "title": "Content",
+                        "type": "string"
+                    },
+                    "active": {
+                        "default": true,
+                        "title": "Active",
+                        "type": "boolean"
+                    },
+                    "created": {
+                        "format": "date-time",
+                        "title": "Created",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "name",
+                    "description",
+                    "bucket",
+                    "content"
+                ],
+                "title": "TaskIn",
+                "type": "object"
+            },
+            "ResponseOut": {
+                "properties": {
+                    "status": {
+                        "default": 200,
+                        "title": "Status",
+                        "type": "integer"
+                    },
+                    "message": {
+                        "default": "You got it !",
+                        "title": "Message",
+                        "type": "string"
+                    },
+                    "result": {
+                        "default": [],
+                        "items": {
+                            "$ref": "#/components/schemas/Schema"
+                        },
+                        "title": "Result",
+                        "type": "array"
+                    }
+                },
+                "title": "ResponseOut",
+                "type": "object"
+            },
+            "Schema": {
+                "properties": {},
+                "title": "Schema",
+                "type": "object"
+            },
+            "AuthenticateIn": {
+                "additionalProperties": false,
+                "properties": {
+                    "token": {
+                        "title": "Token",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "token"
+                ],
+                "title": "AuthenticateIn",
+                "type": "object"
+            },
+            "PreAuthenticateIn": {
+                "additionalProperties": false,
+                "properties": {
+                    "username": {
+                        "title": "Username",
+                        "type": "string"
+                    },
+                    "credential": {
+                        "title": "Credential",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "username",
+                    "credential"
+                ],
+                "title": "PreAuthenticateIn",
+                "type": "object"
+            },
+            "RegistrationIn": {
+                "additionalProperties": false,
+                "properties": {
+                    "first_name": {
+                        "title": "First Name",
+                        "type": "string"
+                    },
+                    "last_name": {
+                        "title": "Last Name",
+                        "type": "string"
+                    },
+                    "username": {
+                        "title": "Username",
+                        "type": "string"
+                    },
+                    "email": {
+                        "title": "Email",
+                        "type": "string"
+                    },
+                    "password": {
+                        "title": "Password",
+                        "type": "string"
+                    },
+                    "is_staff": {
+                        "default": true,
+                        "title": "Is Staff",
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "first_name",
+                    "last_name",
+                    "username",
+                    "email",
+                    "password"
+                ],
+                "title": "RegistrationIn",
+                "type": "object"
+            },
+            "BucketIn": {
+                "additionalProperties": false,
+                "properties": {
+                    "name": {
+                        "title": "Name",
+                        "type": "string"
+                    },
+                    "description": {
+                        "title": "Description",
+                        "type": "string"
+                    },
+                    "active": {
+                        "default": true,
+                        "title": "Active",
+                        "type": "boolean"
+                    },
+                    "created": {
+                        "format": "date-time",
+                        "title": "Created",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "name",
+                    "description"
+                ],
+                "title": "BucketIn",
+                "type": "object"
+            }
+        }
+    },
+    "servers": []
+}
