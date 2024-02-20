@@ -1,4 +1,5 @@
-FROM python:3.9.12
+# FROM python:3.11
+FROM localhost:5000/python/python:3.9.12
 
 ARG APP_PORT=8000
 
