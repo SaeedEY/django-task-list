@@ -14,7 +14,7 @@ class Subscriber(AbstractUser):
     username = models.CharField(max_length=64, null=False, unique=True)
     email = models.EmailField(max_length=64, null=False, unique=True)
     token = models.TextField(max_length=64) # for temp Authentication without credentials
-    created = models.DateTimeField(db_default=datetime.now(),editable=False)
+    created = models.DateTimeField(default=datetime.now(),editable=False)
 
 class Bucket(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -22,8 +22,8 @@ class Bucket(models.Model):
     description = models.TextField(max_length=256, blank=True)
     # owner = models.UUIDField(null=False,editable=False)
     owner = models.ForeignKey(Subscriber, on_delete=models.PROTECT)
-    active = models.BooleanField(db_default=True)
-    created = models.DateTimeField(db_default=datetime.now(),editable=False)
+    active = models.BooleanField(default=True)
+    created = models.DateTimeField(default=datetime.now(),editable=False)
 
     def to_dict(self):
         return model_to_dict(self)
@@ -42,8 +42,8 @@ class Task(models.Model):
     # bucket = models.UUIDField(null=False)
     bucket = models.ForeignKey(Bucket, on_delete=models.PROTECT)
     content = models.TextField(max_length=2048,null=False)
-    active = models.BooleanField(db_default=True)
-    created = models.DateTimeField(db_default=datetime.now(),editable=False)
+    active = models.BooleanField(default=True)
+    created = models.DateTimeField(default=datetime.now(),editable=False)
 
     def to_dict(self):
         return model_to_dict(self)
@@ -58,8 +58,8 @@ class Task(models.Model):
 class SubscriberBucket(models.Model):
     subs = models.ForeignKey(Subscriber, on_delete=models.PROTECT)
     bucket = models.ForeignKey(Bucket, on_delete=models.PROTECT)
-    active = models.BooleanField(db_default=True)
-    created = models.DateTimeField(db_default=datetime.now(),editable=False)
+    active = models.BooleanField(default=True)
+    created = models.DateTimeField(default=datetime.now(),editable=False)
 
     class Meta:
         constraints = [
@@ -69,8 +69,8 @@ class SubscriberBucket(models.Model):
 class BucketTask(models.Model):
     task = models.ForeignKey(Task, on_delete=models.PROTECT)
     bucket = models.ForeignKey(Bucket, on_delete=models.PROTECT)
-    active = models.BooleanField(db_default=True)
-    created = models.DateTimeField(db_default=datetime.now(),editable=False)
+    active = models.BooleanField(default=True)
+    created = models.DateTimeField(default=datetime.now(),editable=False)
 
     class Meta:
         constraints = [
