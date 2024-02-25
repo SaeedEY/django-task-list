@@ -1,5 +1,4 @@
 # Django TaskList API
----
 A Serving application (web api) written in Django and simple database engine (Sqlite). 
 below concepts are implemented:
 - Subscriber (Custom User) 
@@ -9,9 +8,10 @@ below concepts are implemented:
 ##### Current Features 
 - Register / Login / Authenticate / Logout
 - CreateTask / CreateBucket
+- EditTask / EditBucket
 
 ##### Up coming Features
-- EditTask / EditBucket / DeleteTask / DeleteBucket
+- DeleteTask / DeleteBucket
 - Multi Subscriber Tasks / Multi Subscriber Buckets
 - Multi Bucket Tasks
 - Role Based Tasks / Role Based Buckets
@@ -19,11 +19,9 @@ below concepts are implemented:
 - Bucket Changes' History / Task Changes' History
 
 ## Docs
----
 You might better to visit the [Swagger Editor](https://editor.swagger.io/) and import our [openapi.json](https://raw.githubusercontent.com/SaeedEY/django-task-list/master/openapi.json) [latest version] to explore.
 
 ## Installation
----
 To run this app you required to fulfill the below requirements:
 - Python 3.9+
 - ⤷ django
@@ -48,9 +46,7 @@ docker-compose up --build
 ```
 
 ## Contribution
----
 You are totally wellcome to handle the UI side on your own and dont forget to update this [README.md](https://github.com/SaeedEY/django-task-list/blob/master/README.md) and add your repo under the **Link** section.
 
 ## Links
----
 -- REF1
