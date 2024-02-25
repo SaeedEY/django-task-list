@@ -9,9 +9,9 @@ services:
       dockerfile: Dockerfile
       args:
         APP_PORT: 8888
-    network_mode: bridge
-    ports:
-    - target: 8888
-      published: 80
-      mode: bridge
+    network_mode: host
+    # ports:
+    # - target: 8888
+    #   published: 80
+    #   mode: bridge
     # test: 
