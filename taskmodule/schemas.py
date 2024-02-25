@@ -16,6 +16,16 @@ class TaskIn(Schema):
     class Config:
         extra = "forbid"
 
+class TaskEdit(Schema):
+    id : uuid.UUID
+    name : str
+    description : str
+    content : str
+    active : bool = True
+
+    class Config:
+        extra = "forbid"
+
 class RegistrationIn(Schema):
     first_name : str
     last_name : str
@@ -46,6 +56,15 @@ class BucketIn(Schema):
     active : bool = True
     created : datetime = Field(default_factory=datetime.now)
     
+    class Config:
+        extra = "forbid"
+
+class BucketEdit(Schema):
+    id : uuid.UUID
+    name : str
+    description : str
+    active : bool = True
+
     class Config:
         extra = "forbid"
 

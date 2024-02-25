@@ -147,6 +147,28 @@ def task_add(request, payload=None) -> ResponseOut:
         response.message = "Internal server error !"
     return response.model_dump()
 
+def task_edit(request, payload=None) -> ResponseOut:
+    response = ResponseOut()
+    try:
+        with transaction.atomic():
+            current_task = Task.objects.get(id = payload.id, owner= request.user)
+            current_task.name, current_task.description, current_task.content, current_task.active = payload.name, payload.description, payload.content, payload.active
+            current_task.save()
+            response.result = [current_task.to_dict(exclude=['active','owner','bucket'])]
+    except IntegrityError as err:
+        response.status = 400
+        response.message = "Task name duplicated !"
+        print(err) # Info Logging purpose
+    except Task.DoesNotExist as err:
+        response.status = 406
+        response.message = "Task '%s' not found !" % payload.id
+        print (err) # Info Logging purpose
+    except Exception as err:
+        response.status = 500 
+        response.message = "Internal server error !"
+        print(err) # Info Logging purpose
+    return response.model_dump()
+
 ##############################################################################
 ## BUCKETs - supposed to be moved to somewhere more sctructured in refactor :D
 ##############################################################################
@@ -181,4 +203,26 @@ def bucket_add(request, payload=None) -> ResponseOut:
     #     response.status = 406
     #     response.message = "Bucket '%s' not found !" % payload.bucket
     #     print (err)
+    return response.model_dump()
+
+def bucket_edit(request, payload=None) -> ResponseOut:
+    response = ResponseOut()
+    try:
+        with transaction.atomic():
+            current_bucket = Bucket.objects.get(id = payload.id, owner= request.user)
+            current_bucket.name, current_bucket.description, current_bucket.active = payload.name, payload.description, payload.active
+            current_bucket.save()
+            response.result = [current_bucket.to_dict(exclude=['active'])]
+    except IntegrityError as err:
+        response.status = 400
+        response.message = "Bucket name duplicated !"
+        print(err) # Info Logging purpose
+    except Bucket.DoesNotExist as err:
+        response.status = 406
+        response.message = "Bucket '%s' not found !" % payload.id
+        print (err) # Info Logging purpose
+    except Exception as err:
+        response.status = 500 
+        response.message = "Internal server error !"
+        print(err) # Info Logging purpose
     return response.model_dump()

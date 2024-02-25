@@ -2,7 +2,7 @@ from typing import Union
 from ninja import NinjaAPI
 from ninja.errors import ValidationError, HttpError
 from django.http import JsonResponse
-from .schemas import TaskIn, BucketIn, ResponseOut, AuthenticateIn, PreAuthenticateIn, RegistrationIn
+from .schemas import TaskIn, TaskEdit, BucketIn, BucketEdit, ResponseOut, AuthenticateIn, PreAuthenticateIn, RegistrationIn
 from . import views
 
 api = NinjaAPI()
@@ -57,6 +57,12 @@ def task_add(request , payload: TaskIn):
         return ResponseOut(status='403', message='Access denied !')
     return JsonResponse(views.task_add(request, payload))
 
+@api.patch('/task/edit', response= ResponseOut)
+def task_add(request , payload: TaskEdit):
+    if not request.user.is_authenticated:   # Supposed to moved in some other layers 
+        return ResponseOut(status='403', message='Access denied !')
+    return JsonResponse(views.task_edit(request, payload))
+
 @api.get('/buckets', response=ResponseOut)
 def buckets_index(request):
     if not request.user.is_authenticated:   # Supposed to moved in some other layers 
@@ -68,3 +74,9 @@ def bucket_add(request , payload: BucketIn):
     if not request.user.is_authenticated:   # Supposed to moved in some other layers 
         return ResponseOut(status='403', message='Access denied !')
     return JsonResponse(views.bucket_add(request, payload))
+
+@api.patch('/bucket/edit', response= ResponseOut)
+def bucket_edit(request , payload: BucketEdit):
+    if not request.user.is_authenticated:   # Supposed to moved in some other layers 
+        return ResponseOut(status='403', message='Access denied !')
+    return JsonResponse(views.bucket_edit(request, payload))
