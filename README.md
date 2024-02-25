@@ -5,11 +5,6 @@ below concepts are implemented:
 - Bucket : in order to have a top level Container for Task
 - Task : used in deep level 
 
-##### Current Features 
-- Register / Login / Authenticate / Logout
-- CreateTask / CreateBucket
-- EditTask / EditBucket
-
 ##### Up coming Features
 - DeleteTask / DeleteBucket
 - Multi Subscriber Tasks / Multi Subscriber Buckets
@@ -17,6 +12,11 @@ below concepts are implemented:
 - Role Based Tasks / Role Based Buckets
 - Subscriber Changes' History
 - Bucket Changes' History / Task Changes' History
+
+##### Current Features 
+- EditTask / EditBucket <sup>new</sup>
+- Register / Login / Authenticate / Logout
+- CreateTask / CreateBucket
 
 ## Docs
 You might better to visit the [Swagger Editor](https://editor.swagger.io/) and import our [openapi.json](https://raw.githubusercontent.com/SaeedEY/django-task-list/master/openapi.json) [latest version] to explore.

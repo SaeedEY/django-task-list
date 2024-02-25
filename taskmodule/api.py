@@ -58,7 +58,7 @@ def task_add(request , payload: TaskIn):
     return JsonResponse(views.task_add(request, payload))
 
 @api.patch('/task/edit', response= ResponseOut)
-def task_add(request , payload: TaskEdit):
+def task_edit(request , payload: TaskEdit):
     if not request.user.is_authenticated:   # Supposed to moved in some other layers 
         return ResponseOut(status='403', message='Access denied !')
     return JsonResponse(views.task_edit(request, payload))

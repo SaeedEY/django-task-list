@@ -198,6 +198,35 @@
                 }
             }
         },
+        "/api/task/edit": {
+            "patch": {
+                "operationId": "taskmodule_api_task_add",
+                "summary": "Task Add",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseOut"
+                                }
+                            }
+                        }
+                    }
+                },
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TaskEdit"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/api/buckets": {
             "get": {
                 "operationId": "taskmodule_api_buckets_index",
@@ -239,6 +268,35 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/BucketIn"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/api/bucket/edit": {
+            "patch": {
+                "operationId": "taskmodule_api_bucket_edit",
+                "summary": "Bucket Edit",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseOut"
+                                }
+                            }
+                        }
+                    }
+                },
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BucketEdit"
                             }
                         }
                     },
@@ -390,6 +448,41 @@
                 "title": "RegistrationIn",
                 "type": "object"
             },
+            "TaskEdit": {
+                "additionalProperties": false,
+                "properties": {
+                    "id": {
+                        "format": "uuid",
+                        "title": "Id",
+                        "type": "string"
+                    },
+                    "name": {
+                        "title": "Name",
+                        "type": "string"
+                    },
+                    "description": {
+                        "title": "Description",
+                        "type": "string"
+                    },
+                    "content": {
+                        "title": "Content",
+                        "type": "string"
+                    },
+                    "active": {
+                        "default": true,
+                        "title": "Active",
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "id",
+                    "name",
+                    "description",
+                    "content"
+                ],
+                "title": "TaskEdit",
+                "type": "object"
+            },
             "BucketIn": {
                 "additionalProperties": false,
                 "properties": {
@@ -417,6 +510,36 @@
                     "description"
                 ],
                 "title": "BucketIn",
+                "type": "object"
+            },
+            "BucketEdit": {
+                "additionalProperties": false,
+                "properties": {
+                    "id": {
+                        "format": "uuid",
+                        "title": "Id",
+                        "type": "string"
+                    },
+                    "name": {
+                        "title": "Name",
+                        "type": "string"
+                    },
+                    "description": {
+                        "title": "Description",
+                        "type": "string"
+                    },
+                    "active": {
+                        "default": true,
+                        "title": "Active",
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "id",
+                    "name",
+                    "description"
+                ],
+                "title": "BucketEdit",
                 "type": "object"
             }
         }
