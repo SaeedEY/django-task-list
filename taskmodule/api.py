@@ -7,10 +7,6 @@ from . import views
 
 api = NinjaAPI()
 
-# @api.exception_handler(ValidationError)
-# def invalid_request(request, exc):
-#     return ResponseOut(status=)
-
 @api.get('/', response=TaskIn)
 def intro(request):
     return JsonResponse( views.intro(request) )
