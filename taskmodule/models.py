@@ -25,8 +25,8 @@ class Bucket(models.Model):
     active = models.BooleanField(default=True)
     created = models.DateTimeField(default=now,editable=False)
 
-    def to_dict(self):
-        return model_to_dict(self)
+    def to_dict(self, exclude=None):
+        return model_to_dict(self, exclude=exclude)
 
     class Meta:
         constraints = [
@@ -45,8 +45,8 @@ class Task(models.Model):
     active = models.BooleanField(default=True)
     created = models.DateTimeField(default=now,editable=False)
 
-    def to_dict(self):
-        return model_to_dict(self)
+    def to_dict(self, exclude=None):
+        return model_to_dict(self, exclude=exclude)
 
     class Meta:
         constraints = [
