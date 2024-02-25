@@ -1,0 +1,11 @@
+version: "3.8"
+
+services:
+  web_api:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_PORT: 8888
+    container_name: web-api
+    
