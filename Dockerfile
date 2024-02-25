@@ -13,4 +13,4 @@ COPY . .
 RUN python manage.py makemigrations taskmodule
 RUN python manage.py migrate
 
-CMD ['python', 'manage.py', 'runserver', $APP_PORT]
+CMD python manage.py runserver $APP_PORT
