@@ -26,7 +26,7 @@ You might better to visit the [Swagger Editor](https://editor.swagger.io/) and i
 ---
 To run this app you required to fulfill the below requirements:
 - Python 3.9+
-- ⤷ django 
+- ⤷ django
 - ⤷ django-ninja
 
 
@@ -40,7 +40,12 @@ python3 manage.py migrate
 python3 manage.py runserver
 ```
 ##### Docker
- soon . .
+In order to install 
+```sh
+git clone https://github.com/SaeedEY/django-task-list.git
+cd django-task-list
+docker-compose up --build
+```
 
 ## Contribution
 ---
