@@ -2,10 +2,11 @@ version: "3.8"
 
 services:
   web_api:
+    container_name: web-api
+    tty: true
     build: 
       context: .
       dockerfile: Dockerfile
       args:
         APP_PORT: 8888
-    container_name: web-api
     # test: 

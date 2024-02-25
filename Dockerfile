@@ -15,5 +15,4 @@ RUN python manage.py migrate
 
 EXPOSE $APP_PORT
 
-#CMD python manage.py runserver $APP_PORT
-CMD echo $APP_PORT
+CMD python manage.py runserver $APP_PORT
