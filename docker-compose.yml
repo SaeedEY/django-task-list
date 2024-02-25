@@ -10,9 +10,9 @@ services:
       args:
         APP_PORT: 8888
     network_mode: host
-    test: curl -f http://localhost:8888/ping || exit 1
-    # ports:
-    # - target: 8888
-    #   published: 80
-    #   mode: bridge
-    # test: 
+    healthcheck:
+      test: curl -f http://localhost:8888/ping || exit 1
+      interval: 1m30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
