@@ -22,13 +22,18 @@
                             }
                         }
                     }
-                }
+                },
+                "tags": [
+                    "Dashboard"
+                ]
             }
         },
-        "/api/authenticate": {
+        "/api/auth/authenticate": {
             "post": {
                 "operationId": "taskmodule_api_authenticate",
-                "summary": "Authenticate",
+                "summary": [
+                    "Login with token"
+                ],
                 "parameters": [],
                 "responses": {
                     "200": {
@@ -42,6 +47,10 @@
                         }
                     }
                 },
+                "description": "To login subscriber through a specific token:\n - **token**",
+                "tags": [
+                    "Authentication"
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -54,7 +63,7 @@
                 }
             }
         },
-        "/api/login": {
+        "/api/auth/login": {
             "post": {
                 "operationId": "taskmodule_api_login",
                 "summary": "Login",
@@ -71,6 +80,10 @@
                         }
                     }
                 },
+                "description": "To login subscriber with username and password:\n - **username**\n - **credential**",
+                "tags": [
+                    "Authentication"
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -83,10 +96,12 @@
                 }
             }
         },
-        "/api/registration": {
+        "/api/auth/registration": {
             "post": {
                 "operationId": "taskmodule_api_register",
-                "summary": "Register",
+                "summary": [
+                    "Register new subscriber"
+                ],
                 "parameters": [],
                 "responses": {
                     "200": {
@@ -100,6 +115,10 @@
                         }
                     }
                 },
+                "description": "To register a new subscriber:\n - **first_name**\n - **username**\n - **email**\n - **password**\n - **is_staff**",
+                "tags": [
+                    "Authentication"
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -112,7 +131,7 @@
                 }
             }
         },
-        "/api/logout": {
+        "/api/auth/logout": {
             "get": {
                 "operationId": "taskmodule_api_logout",
                 "summary": "Logout",
@@ -128,32 +147,19 @@
                             }
                         }
                     }
-                }
-            }
-        },
-        "/api/subscribers": {
-            "get": {
-                "operationId": "taskmodule_api_subscribers_list",
-                "summary": "Subscribers List",
-                "parameters": [],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ResponseOut"
-                                }
-                            }
-                        }
-                    }
-                }
+                },
+                "description": "To Logout a new subscriber",
+                "tags": [
+                    "Authentication"
+                ]
             }
         },
         "/api/tasks": {
             "get": {
                 "operationId": "taskmodule_api_tasks_index",
-                "summary": "Tasks Index",
+                "summary": [
+                    "Subscriber's active tasks"
+                ],
                 "parameters": [],
                 "responses": {
                     "200": {
@@ -166,10 +172,14 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "The list of all active subscriber's tasks",
+                "tags": [
+                    "Tasks"
+                ]
             }
         },
-        "/api/task/new": {
+        "/api/tasks/new": {
             "post": {
                 "operationId": "taskmodule_api_task_add",
                 "summary": "Task Add",
@@ -186,6 +196,10 @@
                         }
                     }
                 },
+                "description": "To create a new task:\n - **name** (type of string)\n - **description** (type of string)\n - **bucket** (type of uuid `[a-Z0-9]{8}-[a-Z0-9]{4}-[a-Z0-9]{4}-[a-Z0-9]{12}]`)\n - **content** (type of string)\n - **active** (type of bool default true)\n - **created** (type of datetime default datetime.now)",
+                "tags": [
+                    "Tasks"
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -198,10 +212,10 @@
                 }
             }
         },
-        "/api/task/edit": {
+        "/api/tasks/edit": {
             "patch": {
-                "operationId": "taskmodule_api_task_add",
-                "summary": "Task Add",
+                "operationId": "taskmodule_api_task_edit",
+                "summary": "Task Edit",
                 "parameters": [],
                 "responses": {
                     "200": {
@@ -215,6 +229,10 @@
                         }
                     }
                 },
+                "description": "To edit an existing task:\n - **id** (type of uuid `[a-Z0-9]{8}-[a-Z0-9]{4}-[a-Z0-9]{4}-[a-Z0-9]{12}]`)\n - **name** (type of string)\n - **description** (type of string)\n - **content** (type of string)\n - **active** (type of bool default true)",
+                "tags": [
+                    "Tasks"
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -230,7 +248,9 @@
         "/api/buckets": {
             "get": {
                 "operationId": "taskmodule_api_buckets_index",
-                "summary": "Buckets Index",
+                "summary": [
+                    "Subscriber's active buckets"
+                ],
                 "parameters": [],
                 "responses": {
                     "200": {
@@ -243,10 +263,14 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "The list of all active subscriber's buckets",
+                "tags": [
+                    "Buckets"
+                ]
             }
         },
-        "/api/bucket/new": {
+        "/api/buckets/new": {
             "post": {
                 "operationId": "taskmodule_api_bucket_add",
                 "summary": "Bucket Add",
@@ -263,6 +287,10 @@
                         }
                     }
                 },
+                "description": "To create a new bucket:\n - **name** (type of string)\n - **description** (type of string)\n - **active** (type of bool default true)\n - **created** (type of datetime default datetime.now)",
+                "tags": [
+                    "Buckets"
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -275,7 +303,7 @@
                 }
             }
         },
-        "/api/bucket/edit": {
+        "/api/buckets/edit": {
             "patch": {
                 "operationId": "taskmodule_api_bucket_edit",
                 "summary": "Bucket Edit",
@@ -292,6 +320,10 @@
                         }
                     }
                 },
+                "description": "To edit an existing bucket:\n - **id** (type of uuid `[a-Z0-9]{8}-[a-Z0-9]{4}-[a-Z0-9]{4}-[a-Z0-9]{12}]`)\n - **name** (type of string)\n - **description** (type of string)\n - **active** (type of bool default true)",
+                "tags": [
+                    "Buckets"
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
