@@ -1,8 +1,8 @@
-from typing import Union
+""" Modules here """
 from ninja import NinjaAPI
-from ninja.errors import ValidationError, HttpError
 from django.http import JsonResponse
-from .schemas import TaskIn, TaskEdit, BucketIn, BucketEdit, ResponseOut, AuthenticateIn, PreAuthenticateIn, RegistrationIn
+from .schemas import TaskIn, TaskEdit, BucketIn, BucketEdit, \
+    ResponseOut, AuthenticateIn, PreAuthenticateIn, RegistrationIn
 from . import views
 
 api = NinjaAPI()
@@ -13,9 +13,13 @@ api = NinjaAPI()
 
 @api.get('/', response=TaskIn, tags=["Dashboard"])
 def intro(request):
+    """
+    Maybe used for homepage purpose
+    """
     return JsonResponse( views.intro(request) )
 
-@api.post('/auth/authenticate', response= ResponseOut, tags=["Authentication"], summary=["Login with token"])
+@api.post('/auth/authenticate', response= ResponseOut, \
+    tags=["Authentication"], summary=["Login with token"])
 def authenticate(request, payload: AuthenticateIn):
     """
     To login subscriber through a specific token:
@@ -36,7 +40,8 @@ def login(request, payload: PreAuthenticateIn):
         return ResponseOut(message='Login authorized !')
     return ResponseOut(status='403', message='Login failed or already logged in !')
 
-@api.post('/auth/registration', response= ResponseOut, tags=["Authentication"], summary=["Register new subscriber"])
+@api.post('/auth/registration', response= ResponseOut, \
+    tags=["Authentication"], summary=["Register new subscriber"])
 def register(request, payload: RegistrationIn):
     """
     To register a new subscriber:
@@ -59,21 +64,23 @@ def logout(request):
         return ResponseOut(message='Logout successfuly !')
     return ResponseOut(status='403', message='Access denied or already logged out !')
 
-@api.get('/subscribers', response=ResponseOut, tags=["Subscribers"], include_in_schema=False)
+@api.get('/subscribers', response=ResponseOut, \
+    tags=["Subscribers"], include_in_schema=False)
 def subscribers_list(request):
     """
     The list of all active and deactive subscribers
     """
-    if request.user.is_authenticated and request.user.is_admin:   # Supposed to moved in some other layers 
+    if request.user.is_authenticated and request.user.is_admin: # moved in some other layers 
         return JsonResponse(views.subscribers_list(request))
     return ResponseOut(status='403', message='Access denied !')
 
-@api.get('/tasks', response=ResponseOut, tags=["Tasks"], summary=["Subscriber's active tasks"])
+@api.get('/tasks', response=ResponseOut, \
+    tags=["Tasks"], summary=["Subscriber's active tasks"])
 def tasks_index(request):
     """
     The list of all active subscriber's tasks
     """
-    if not request.user.is_authenticated:   # Supposed to moved in some other layers 
+    if not request.user.is_authenticated:   # moved in some other layers 
         return ResponseOut(status='403', message='Access denied !')
     return JsonResponse(views.tasks_index(request))
 
@@ -106,7 +113,8 @@ def task_edit(request , payload: TaskEdit):
         return ResponseOut(status='403', message='Access denied !')
     return JsonResponse(views.task_edit(request, payload))
 
-@api.get('/buckets', response=ResponseOut, tags=["Buckets"], summary=["Subscriber's active buckets"])
+@api.get('/buckets', response=ResponseOut, \
+    tags=["Buckets"], summary=["Subscriber's active buckets"])
 def buckets_index(request):
     """
     The list of all active subscriber's buckets

@@ -4,5 +4,6 @@ taskmodule/__pycache__
 taskmodule/migrations
 db.sqlite3
 
+settings.json
 .vscode
 *.pyc
