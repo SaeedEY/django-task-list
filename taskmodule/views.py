@@ -13,7 +13,7 @@ from .models import Task, Bucket, Subscriber, SubscriberBucket, BucketTask
 from .schemas import ResponseOut
 # from .schemas import TaskIn
 
-# LOGGING KETWORD REFERENCE https://sematext.com/blog/logging-levels/
+# LOGGING KEYWORD REFERENCE https://sematext.com/blog/logging-levels/
 
 # Create your views here.
 def intro(request):
@@ -140,7 +140,6 @@ def tasks_index(request) -> ResponseOut:
     List of subscriber's active tasks
      - Output: List of Tasks
     """
-    # TODO: as owner property added to BucketTask, then new method using owner of bucket task supposed to be checked 
     response = ResponseOut()
     try:
         subscriberbuckets = SubscriberBucket.objects.filter(subs=request.user, active=True)
@@ -170,7 +169,6 @@ def task_add(request, payload=None) -> ResponseOut:
      - Input: payload<TaskInSchema>
      - Output: bool
     """
-    # TODO: as owner property added to BucketTask, then new method using owner of bucket task supposed to be checked 
     response = ResponseOut()
     try:
         given_bucket = Bucket.objects.get(id=payload.bucket, owner=request.user)
@@ -198,17 +196,13 @@ def task_deactivate(request, payload=None) -> ResponseOut:
      - Input: payload<TaskRemoveSchema>
      - Output: bool
     """
-    # TODO: as owner property added to BucketTask, then new method using owner of bucket task supposed to be checked 
     response = ResponseOut()
     try:
         # given_bucket = Bucket.objects.get(id=payload.bucket, owner=request.user)
         with transaction.atomic():
             current_task = Task.objects.filter(id= payload.id, owner= request.user, active= True).get()
-            # assert current_task.exists(), f"Task {payload.id} not found !" # commented due to `except Task.DoesNotExist as err`
             current_buckettask = BucketTask.objects.filter(task= current_task.id, owner= request.user, active=True)
-            # assert current_buckettask.exists(), f"BucketTask {payload.id} not found !" # commented due to ` except BucketTask.DoesNotExist as err`
             assert current_buckettask.update(active= False), f" BucketTask {current_buckettask.get().id} delete failed or already deactivated !"
-            # assert current_task.update(active= False), f" Task {payload.id} delete failed or already deactivated !" # Supposed to not been deactivated
     except IntegrityError as err:
         response.status = 400
         # response.message = "Task name duplicated !"
@@ -236,7 +230,7 @@ def task_edit(request, payload=None) -> ResponseOut:
     response = ResponseOut()
     try:
         with transaction.atomic():
-            current_task = Task.objects.get(id = payload.id, owner= request.user)
+            current_task = Task.objects.get(id = payload.id, owner= request.user, active= True)
             current_task.name, current_task.description, current_task.content, current_task.active = payload.name, payload.description, payload.content, payload.active
             current_task.save()
             response.result = [current_task.to_dict(exclude=['active','owner','bucket'])]
@@ -245,7 +239,7 @@ def task_edit(request, payload=None) -> ResponseOut:
         response.message = "Task name duplicated !"
         print(err) # Info Logging purpose
     except Task.DoesNotExist as err:
-        response.status = 406
+        response.status = 404
         response.message = f"Task '{payload.id}' not found !"
         print (err) # Info Logging purpose
     except Exception as err:
@@ -293,10 +287,6 @@ def bucket_add(request, payload=None) -> ResponseOut:
         response.status = 500
         response.message = "Internal server error !"
         print(err) # Info Logging purpose
-    # except Bucket.DoesNotExist as err:
-    #     response.status = 406
-    #     response.message = "Bucket '%s' not found !" % payload.bucket
-    #     print (err)
     return response.model_dump()
 
 def bucket_edit(request, payload=None) -> ResponseOut:
@@ -338,14 +328,12 @@ def bucket_deactivate(request, payload=None) -> ResponseOut:
         # given_bucket = Bucket.objects.get(id=payload.bucket, owner=request.user)
         with transaction.atomic():
             current_buckettasks = BucketTask.objects.filter(bucket= payload.id, owner= request.user, active= True)
-            # buckettask_list = BucketTask.objects.filter(id= payload.id, owner= request.user, active= True)
-            # assert current_task.exists(), f"Task {payload.id} not found !" # Comment due to `Task.DoesNotExist as err`
-            # assert current_buckettask.exists(), f"BucketTask {payload.id} not found !" # Comment due to except `Bucket.DoesNotExist as err`
-            assert current_buckettasks.update(active= False), f" Task of Bucket {payload.id} delete failed or already deactivated !"
-            # assert current_bucket.update(active= False), f" Bucket {payload.id} delete failed or already deactivated !"
+            current_subscriberbuckets = SubscriberBucket.objects.filter(bucket= payload.id, subs= request.user, active= True)
+            assert current_subscriberbuckets.update(active= False), f"Bucket {payload.id} delete failed or already deactivated !"
+            current_buckettasks.update(active= False)
     except IntegrityError as err:
         response.status = 400
-        # response.message = "Task name duplicated !"
+        response.message = "IntegrityError !"
         print(err) # Info Logging purpose
     except BucketTask.DoesNotExist as err:
         response.status = 404
