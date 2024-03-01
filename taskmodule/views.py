@@ -140,24 +140,27 @@ def tasks_index(request) -> ResponseOut:
     List of subscriber's active tasks
      - Output: List of Tasks
     """
+    # TODO: as owner property added to BucketTask, then new method using owner of bucket task supposed to be checked 
     response = ResponseOut()
     try:
-        subscriber_buckets = SubscriberBucket.objects.filter(subs=request.user, active=True)
-        # Probably need to be moved after next IF in case of `subscriber_buckets` empty ?
-        bucket_ids = [sb.bucket_id for sb in list (subscriber_buckets.select_related())]
-        if not subscriber_buckets.exists() :
-            return response.model_dump()
-        bucket_tasks = BucketTask.objects.filter(bucket__in=bucket_ids)
-        task_ids = [bt.task_id for bt in list (bucket_tasks.select_related())]
-        if not bucket_tasks.exists():
-            return response.model_dump()
-        response.result = [task for task in Task.objects.filter(id__in=task_ids).\
-            values_list('id','name','description','content','created')]
+        subscriberbuckets = SubscriberBucket.objects.filter(subs=request.user, active=True)
+        buckettask_ids = [sub_buckets.bucket.id for sub_buckets in subscriberbuckets]
+        active_sub_buckettasks = BucketTask.objects.filter(bucket__in= buckettask_ids, active=True)
+        subscriber_active_tasks = [bucket_task.task.to_dict(append={'bucket':bucket_task.bucket.id,'id':bucket_task.task.id},exclude=['owner','active']) for bucket_task in active_sub_buckettasks]
+        response.result = subscriber_active_tasks
+    except SubscriberBucket.DoesNotExist as err:
+        response.status = 404
+        response.message = 'No active Bucket has found !'
+        print (err) # Info Logging purpose
+    except BucketTask.DoesNotExist as err:
+        response.status = 404
+        response.message = 'No active Task has found !'
+        print (err) # Info Logging purpose
     except IntegrityError as err:
-        print(err) # Info Logging purpose
+        print (err) # Info Logging purpose
     except Exception as err:
         response.status = 500
-        response.message = "Internal server error !"
+        response.message = 'Internal server error !'
         print(err) # Info Logging purpose
     return response.model_dump()
 
@@ -167,13 +170,14 @@ def task_add(request, payload=None) -> ResponseOut:
      - Input: payload<TaskInSchema>
      - Output: bool
     """
+    # TODO: as owner property added to BucketTask, then new method using owner of bucket task supposed to be checked 
     response = ResponseOut()
     try:
         given_bucket = Bucket.objects.get(id=payload.bucket, owner=request.user)
         with transaction.atomic():
-            new_task = Task.objects.create(name = payload.name, description = payload.description, owner= request.user, bucket= given_bucket, content= payload.content)
-            new_bucket_task = BucketTask.objects.create(task = new_task, bucket = given_bucket)
-            response.result = [new_bucket_task.to_dict()]
+            new_task = Task.objects.create(name = payload.name, description = payload.description, owner= request.user, content= payload.content)
+            BucketTask.objects.create(task = new_task, bucket = given_bucket, owner= request.user)
+            response.result = [new_task.to_dict(exclude=['id','owner'])]
     except IntegrityError as err:
         response.status = 400
         response.message = "Task name duplicated !"
@@ -182,9 +186,45 @@ def task_add(request, payload=None) -> ResponseOut:
         response.status = 400
         response.message = f"Bucket '{payload.bucket}' not found !"
         print (err) # Info Logging purpose
-    except Exception:
-        response.status = 500 
+    except Exception as err:
+        response.status = 500
         response.message = "Internal server error !"
+        print (err) # Info Logging purpose
+    return response.model_dump()
+
+def task_deactivate(request, payload=None) -> ResponseOut:
+    """ 
+    Removing task
+     - Input: payload<TaskRemoveSchema>
+     - Output: bool
+    """
+    # TODO: as owner property added to BucketTask, then new method using owner of bucket task supposed to be checked 
+    response = ResponseOut()
+    try:
+        # given_bucket = Bucket.objects.get(id=payload.bucket, owner=request.user)
+        with transaction.atomic():
+            current_task = Task.objects.filter(id= payload.id, owner= request.user, active= True).get()
+            # assert current_task.exists(), f"Task {payload.id} not found !" # commented due to `except Task.DoesNotExist as err`
+            current_buckettask = BucketTask.objects.filter(task= current_task.id, owner= request.user, active=True)
+            # assert current_buckettask.exists(), f"BucketTask {payload.id} not found !" # commented due to ` except BucketTask.DoesNotExist as err`
+            assert current_buckettask.update(active= False), f" BucketTask {current_buckettask.get().id} delete failed or already deactivated !"
+            # assert current_task.update(active= False), f" Task {payload.id} delete failed or already deactivated !" # Supposed to not been deactivated
+    except IntegrityError as err:
+        response.status = 400
+        # response.message = "Task name duplicated !"
+        print(err) # Info Logging purpose
+    except BucketTask.DoesNotExist as err:
+        response.status = 404
+        response.message = f"Task '{payload.id}' not found !"
+        print (err) # Info Logging purpose
+    except Task.DoesNotExist as err:
+        response.status = 404
+        response.message = f"Task '{payload.id}' not found !"
+        print (err) # Info Logging purpose
+    except Exception as err:
+        response.status = 500
+        response.message = "Internal server error !"
+        print (err) # Info Logging purpose
     return response.model_dump()
 
 def task_edit(request, payload=None) -> ResponseOut:
@@ -226,7 +266,7 @@ def buckets_index(request) -> ResponseOut:
     """
     response = ResponseOut()
     try:
-        response.result =  [ bucket for bucket in Bucket.objects.filter(owner=request.user, active=True).values_list('id','name','description','created')]
+        response.result =  [ {key: bucket[key] for key in ['id','name','description','created']} for bucket in Bucket.objects.filter(owner=request.user, active=True).values()]
     except Exception as err:
         response.status = 500
         response.message = "Internal server error !"
@@ -243,8 +283,8 @@ def bucket_add(request, payload=None) -> ResponseOut:
     try:
         with transaction.atomic():
             new_bucket = Bucket.objects.create(name = payload.name, description = payload.description, owner= request.user)
-            new_user_bucket = SubscriberBucket.objects.create(subs = request.user, bucket = new_bucket) 
-            response.result = [new_user_bucket.to_dict()]
+            SubscriberBucket.objects.create(subs = request.user, bucket= new_bucket)
+            response.result = [new_bucket.to_dict(fields=['id','name','description','created'])] # Issue id not parsed out due to Model id is not editable
     except IntegrityError as err:
         response.status = 400
         response.message = "Bucket name duplicated !"
@@ -284,4 +324,39 @@ def bucket_edit(request, payload=None) -> ResponseOut:
         response.status = 500
         response.message = "Internal server error !"
         print(err) # Info Logging purpose
+    return response.model_dump()
+
+def bucket_deactivate(request, payload=None) -> ResponseOut:
+    """ 
+    Removing Bucket
+     - Input: payload<BucketRemoveSchema>
+     - Output: bool
+    """
+    # TODO: as owner property added to BucketTask, then new method using owner of bucket task supposed to be checked 
+    response = ResponseOut()
+    try:
+        # given_bucket = Bucket.objects.get(id=payload.bucket, owner=request.user)
+        with transaction.atomic():
+            current_buckettasks = BucketTask.objects.filter(bucket= payload.id, owner= request.user, active= True)
+            # buckettask_list = BucketTask.objects.filter(id= payload.id, owner= request.user, active= True)
+            # assert current_task.exists(), f"Task {payload.id} not found !" # Comment due to `Task.DoesNotExist as err`
+            # assert current_buckettask.exists(), f"BucketTask {payload.id} not found !" # Comment due to except `Bucket.DoesNotExist as err`
+            assert current_buckettasks.update(active= False), f" Task of Bucket {payload.id} delete failed or already deactivated !"
+            # assert current_bucket.update(active= False), f" Bucket {payload.id} delete failed or already deactivated !"
+    except IntegrityError as err:
+        response.status = 400
+        # response.message = "Task name duplicated !"
+        print(err) # Info Logging purpose
+    except BucketTask.DoesNotExist as err:
+        response.status = 404
+        response.message = f"Bucket '{payload.id}' not found !"
+        print (err) # Info Logging purpose
+    except AssertionError as err:
+        response.status = 404
+        response.message = str(err)
+        print (err) # Info Logging purpose
+    except Exception as err:
+        response.status = 500
+        response.message = "Internal server error !"
+        print (err) # Info Logging purpose
     return response.model_dump()

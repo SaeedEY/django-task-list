@@ -40,6 +40,30 @@ class TaskEdit(Schema):
         """
         extra = "forbid"
 
+class TaskRemove(Schema):
+    """
+    TaskRemove Schema
+    """
+    id : uuid.UUID
+
+    class Config:
+        """ 
+        TaskEdit:Config Schema
+        """
+        extra = "forbid"
+
+class BucketRemove(Schema):
+    """
+    BucketRemove Schema
+    """
+    id : uuid.UUID
+
+    class Config:
+        """ 
+        TaskEdit:Config Schema
+        """
+        extra = "forbid"
+
 class RegistrationIn(Schema):
     """
     RegistrationIn Schema

@@ -33,11 +33,13 @@ class Bucket(models.Model):
     active = models.BooleanField(default=True)
     created = models.DateTimeField(default=now,editable=False)
 
-    def to_dict(self, exclude=None):
+    def to_dict(self, fields=None, exclude=None, append={}):
         """ 
         exlusive method for return dict of model to show in API output
         """
-        return model_to_dict(self, exclude=exclude)
+        response = model_to_dict(self, fields=fields, exclude=exclude)
+        response.update(append)
+        return response
 
     class Meta:
         """ 
@@ -57,16 +59,18 @@ class Task(models.Model):
     # owner = models.UUIDField(null=False,editable=False)
     owner = models.ForeignKey(Subscriber, on_delete=models.PROTECT)
     # bucket = models.UUIDField(null=False)
-    bucket = models.ForeignKey(Bucket, on_delete=models.PROTECT)
+    # bucket = models.ForeignKey(Bucket, on_delete=models.PROTECT) # Removed due to existance of Bucket Task
     content = models.TextField(max_length=2048,null=False)
     active = models.BooleanField(default=True)
     created = models.DateTimeField(default=now,editable=False)
 
-    def to_dict(self, exclude=None):
+    def to_dict(self, fields=None, exclude=None, append={}):
         """ 
         exlusive method for return dict of model to show in API output
         """
-        return model_to_dict(self, exclude=exclude)
+        response = model_to_dict(self, fields=fields, exclude=exclude)
+        response.update(append)
+        return response
 
     class Meta:
         """ 
@@ -86,6 +90,14 @@ class SubscriberBucket(models.Model):
     active = models.BooleanField(default=True)
     created = models.DateTimeField(default=now,editable=False)
 
+    def to_dict(self, fields=None, exclude=None, append={}):
+        """ 
+        exlusive method for return dict of model to show in API output
+        """
+        response = model_to_dict(self, fields=fields, exclude=exclude)
+        response.update(append)
+        return response
+
     class Meta:
         """ 
         SubscriberBucket:Meta class
@@ -102,6 +114,15 @@ class BucketTask(models.Model):
     bucket = models.ForeignKey(Bucket, on_delete=models.PROTECT)
     active = models.BooleanField(default=True)
     created = models.DateTimeField(default=now,editable=False)
+    owner = models.ForeignKey(Subscriber, on_delete=models.PROTECT) 
+
+    def to_dict(self, fields=None, exclude=None, append={}):
+        """ 
+        exlusive method for return dict of model to show in API output
+        """
+        response = model_to_dict(self, fields=fields, exclude=exclude)
+        response.update(append)
+        return response
 
     class Meta:
         """ 

@@ -2,7 +2,8 @@
 from ninja import NinjaAPI
 from django.http import JsonResponse
 from .schemas import TaskIn, TaskEdit, BucketIn, BucketEdit, \
-    ResponseOut, AuthenticateIn, PreAuthenticateIn, RegistrationIn
+    ResponseOut, AuthenticateIn, PreAuthenticateIn, RegistrationIn, \
+    TaskRemove, BucketRemove
 from . import views
 
 api = NinjaAPI()
@@ -99,6 +100,16 @@ def task_add(request , payload: TaskIn):
         return ResponseOut(status='403', message='Access denied !')
     return JsonResponse(views.task_add(request, payload))
 
+@api.delete('/tasks/delete', response= ResponseOut, tags=["Tasks"])
+def task_deactivate(request , payload: TaskRemove):
+    """
+    To deactive an existing task:
+     - **id** (type of string)
+    """
+    if not request.user.is_authenticated:   # Supposed to moved in some other layers 
+        return ResponseOut(status='403', message='Access denied !')
+    return JsonResponse(views.task_deactivate(request, payload))
+
 @api.patch('/tasks/edit', response= ResponseOut, tags=["Tasks"])
 def task_edit(request , payload: TaskEdit):
     """
@@ -135,6 +146,17 @@ def bucket_add(request , payload: BucketIn):
     if not request.user.is_authenticated:   # Supposed to moved in some other layers 
         return ResponseOut(status='403', message='Access denied !')
     return JsonResponse(views.bucket_add(request, payload))
+
+@api.delete('/buckets/delete', response= ResponseOut, tags=["Buckets"])
+def bucket_deactivate(request , payload: BucketRemove):
+    """
+    To deactive an existing bucket:
+     - **id** (type of string)
+    """
+    if not request.user.is_authenticated:   # Supposed to moved in some other layers 
+        return ResponseOut(status='403', message='Access denied !')
+    return JsonResponse(views.bucket_deactivate(request, payload))
+
 
 @api.patch('/buckets/edit', response= ResponseOut, tags=["Buckets"])
 def bucket_edit(request , payload: BucketEdit):
