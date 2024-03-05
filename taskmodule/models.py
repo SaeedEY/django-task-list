@@ -28,7 +28,6 @@ class Bucket(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=64, null=False)
     description = models.TextField(max_length=256, blank=True)
-    # owner = models.UUIDField(null=False,editable=False)
     owner = models.ForeignKey(Subscriber, on_delete=models.PROTECT)
     active = models.BooleanField(default=True)
     created = models.DateTimeField(default=now,editable=False)
@@ -56,10 +55,7 @@ class Task(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=64, null=False)
     description = models.TextField(max_length=256)
-    # owner = models.UUIDField(null=False,editable=False)
     owner = models.ForeignKey(Subscriber, on_delete=models.PROTECT)
-    # bucket = models.UUIDField(null=False)
-    # bucket = models.ForeignKey(Bucket, on_delete=models.PROTECT) # Removed due to existance of Bucket Task
     content = models.TextField(max_length=2048,null=False)
     active = models.BooleanField(default=True)
     created = models.DateTimeField(default=now,editable=False)
@@ -85,8 +81,8 @@ class SubscriberBucket(models.Model):
     """ 
     SubscriberBucket class
     """
-    subs = models.ForeignKey(Subscriber, on_delete=models.PROTECT)
-    bucket = models.ForeignKey(Bucket, on_delete=models.PROTECT)
+    subs = models.ForeignKey(Subscriber, on_delete=models.CASCADE)
+    bucket = models.ForeignKey(Bucket, on_delete=models.CASCADE)
     active = models.BooleanField(default=True)
     created = models.DateTimeField(default=now,editable=False)
 
@@ -110,11 +106,11 @@ class BucketTask(models.Model):
     """ 
     BucketTask class
     """
-    task = models.ForeignKey(Task, on_delete=models.PROTECT)
-    bucket = models.ForeignKey(Bucket, on_delete=models.PROTECT)
+    task = models.ForeignKey(Task, on_delete=models.CASCADE)
+    bucket = models.ForeignKey(Bucket, on_delete=models.CASCADE)
     active = models.BooleanField(default=True)
     created = models.DateTimeField(default=now,editable=False)
-    owner = models.ForeignKey(Subscriber, on_delete=models.PROTECT) 
+    owner = models.ForeignKey(Subscriber, on_delete=models.CASCADE) 
 
     def to_dict(self, fields=None, exclude=None, append={}):
         """ 
