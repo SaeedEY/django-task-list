@@ -2,16 +2,14 @@
 Module listing
 """
 from typing import List
-# from django.shortcuts import render
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
 from django.contrib.auth import authenticate as django_authenticate, \
     login as django_login, logout as django_logout
-
 from django.db import transaction
 from .models import Task, Bucket, Subscriber, SubscriberBucket, BucketTask
 from .schemas import ResponseOut
-# from .schemas import TaskIn
+
 
 # LOGGING KEYWORD REFERENCE https://sematext.com/blog/logging-levels/
 

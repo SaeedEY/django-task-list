@@ -6,7 +6,6 @@ below concepts are implemented:
 - Task : used in deep level 
 
 ##### Up coming Features
-- DeleteTask / DeleteBucket
 - Multi Subscriber Tasks / Multi Subscriber Buckets
 - Multi Bucket Tasks
 - Role Based Tasks / Role Based Buckets
@@ -14,7 +13,8 @@ below concepts are implemented:
 - Bucket Changes' History / Task Changes' History
 
 ##### Current Features 
-- EditTask / EditBucket <sup>new</sup>
+- DeleteTask / DeleteBucket <sup>new</sup>
+- EditTask / EditBucket
 - Register / Login / Authenticate / Logout
 - CreateTask / CreateBucket
 

@@ -23,6 +23,7 @@
                         }
                     }
                 },
+                "description": "Maybe used for homepage purpose",
                 "tags": [
                     "Dashboard"
                 ]
@@ -212,6 +213,39 @@
                 }
             }
         },
+        "/api/tasks/delete": {
+            "delete": {
+                "operationId": "taskmodule_api_task_deactivate",
+                "summary": "Task Deactivate",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseOut"
+                                }
+                            }
+                        }
+                    }
+                },
+                "description": "To deactive an existing task:\n - **id** (type of string)",
+                "tags": [
+                    "Tasks"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TaskRemove"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/api/tasks/edit": {
             "patch": {
                 "operationId": "taskmodule_api_task_edit",
@@ -303,6 +337,39 @@
                 }
             }
         },
+        "/api/buckets/delete": {
+            "delete": {
+                "operationId": "taskmodule_api_bucket_deactivate",
+                "summary": "Bucket Deactivate",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseOut"
+                                }
+                            }
+                        }
+                    }
+                },
+                "description": "To deactive an existing bucket:\n - **id** (type of string)",
+                "tags": [
+                    "Buckets"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BucketRemove"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/api/buckets/edit": {
             "patch": {
                 "operationId": "taskmodule_api_bucket_edit",
@@ -341,6 +408,7 @@
         "schemas": {
             "TaskIn": {
                 "additionalProperties": false,
+                "description": "TaskIn Schema",
                 "properties": {
                     "name": {
                         "title": "Name",
@@ -380,6 +448,7 @@
                 "type": "object"
             },
             "ResponseOut": {
+                "description": "ResponseOut Schema",
                 "properties": {
                     "status": {
                         "default": 200,
@@ -410,6 +479,7 @@
             },
             "AuthenticateIn": {
                 "additionalProperties": false,
+                "description": "AuthenticateIn Schema",
                 "properties": {
                     "token": {
                         "title": "Token",
@@ -424,6 +494,7 @@
             },
             "PreAuthenticateIn": {
                 "additionalProperties": false,
+                "description": "PreAuthenticateIn Schema",
                 "properties": {
                     "username": {
                         "title": "Username",
@@ -443,6 +514,7 @@
             },
             "RegistrationIn": {
                 "additionalProperties": false,
+                "description": "RegistrationIn Schema",
                 "properties": {
                     "first_name": {
                         "title": "First Name",
@@ -480,8 +552,25 @@
                 "title": "RegistrationIn",
                 "type": "object"
             },
+            "TaskRemove": {
+                "additionalProperties": false,
+                "description": "TaskRemove Schema",
+                "properties": {
+                    "id": {
+                        "format": "uuid",
+                        "title": "Id",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "id"
+                ],
+                "title": "TaskRemove",
+                "type": "object"
+            },
             "TaskEdit": {
                 "additionalProperties": false,
+                "description": "TaskEdit Schema",
                 "properties": {
                     "id": {
                         "format": "uuid",
@@ -517,6 +606,7 @@
             },
             "BucketIn": {
                 "additionalProperties": false,
+                "description": "BucketIn Schema",
                 "properties": {
                     "name": {
                         "title": "Name",
@@ -544,8 +634,25 @@
                 "title": "BucketIn",
                 "type": "object"
             },
+            "BucketRemove": {
+                "additionalProperties": false,
+                "description": "BucketRemove Schema",
+                "properties": {
+                    "id": {
+                        "format": "uuid",
+                        "title": "Id",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "id"
+                ],
+                "title": "BucketRemove",
+                "type": "object"
+            },
             "BucketEdit": {
                 "additionalProperties": false,
+                "description": "BucketEdit Schema",
                 "properties": {
                     "id": {
                         "format": "uuid",
