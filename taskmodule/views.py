@@ -140,15 +140,15 @@ def tasks_index(request) -> ResponseOut:
     """
     response = ResponseOut()
     try:
-        subscriberbuckets = SubscriberBucket.objects.filter(subs=request.user, active=True)
-        buckettask_ids = [sub_buckets.bucket.id for sub_buckets in subscriberbuckets]
-        active_sub_buckettasks = BucketTask.objects.filter(bucket__in= buckettask_ids, active=True)
+        # subscriberbuckets = SubscriberBucket.objects.filter(subs=request.user, active=True)
+        # buckettask_ids = [sub_buckets.bucket.id for sub_buckets in subscriberbuckets]
+        active_sub_buckettasks = BucketTask.objects.filter(owner=request.user, active=True)
         subscriber_active_tasks = [bucket_task.task.to_dict(append={'bucket':bucket_task.bucket.id,'id':bucket_task.task.id},exclude=['owner','active']) for bucket_task in active_sub_buckettasks]
         response.result = subscriber_active_tasks
-    except SubscriberBucket.DoesNotExist as err:
-        response.status = 404
-        response.message = 'No active Bucket has found !'
-        print (err) # Info Logging purpose
+    # except SubscriberBucket.DoesNotExist as err:
+    #     response.status = 404
+    #     response.message = 'No active Bucket has found !'
+    #     print (err) # Info Logging purpose
     except BucketTask.DoesNotExist as err:
         response.status = 404
         response.message = 'No active Task has found !'
@@ -258,7 +258,8 @@ def buckets_index(request) -> ResponseOut:
     """
     response = ResponseOut()
     try:
-        response.result =  [ {key: bucket[key] for key in ['id','name','description','created']} for bucket in Bucket.objects.filter(owner=request.user, active=True).values()]
+        # response.result =  [ {key: bucket[key] for key in ['id','name','description','created']} for bucket in Bucket.objects.filter(owner=request.user, active=True).values()]
+        response.result =  [ bucket.to_dict(fields=['id', 'name', 'description','created']) for bucket in Bucket.objects.filter(owner=request.user, active=True)]
     except Exception as err:
         response.status = 500
         response.message = "Internal server error !"

@@ -2,6 +2,7 @@
 Modules listing
 """
 import uuid
+from itertools import chain
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.forms.models import model_to_dict
@@ -34,11 +35,23 @@ class Bucket(models.Model):
 
     def to_dict(self, fields=None, exclude=None, append={}):
         """ 
+        OVERWRITE of `model_to_dict`
         exlusive method for return dict of model to show in API output
         """
-        response = model_to_dict(self, fields=fields, exclude=exclude)
-        response.update(append)
-        return response
+        opts = self._meta
+        data = {}
+        for f in chain(opts.concrete_fields, opts.private_fields, opts.many_to_many):
+            # if not getattr(f, "editable", False):
+            #     continue
+            if fields is not None and f.name not in fields:
+                continue
+            if exclude and f.name in exclude:
+                continue
+            data[f.name] = f.value_from_object(self)
+        # return data
+        # response = model_to_dict(self, fields=fields, exclude=exclude)
+        data.update(append)
+        return data
 
     class Meta:
         """ 
@@ -62,11 +75,23 @@ class Task(models.Model):
 
     def to_dict(self, fields=None, exclude=None, append={}):
         """ 
+        OVERWRITE of `model_to_dict`
         exlusive method for return dict of model to show in API output
         """
-        response = model_to_dict(self, fields=fields, exclude=exclude)
-        response.update(append)
-        return response
+        opts = self._meta
+        data = {}
+        for f in chain(opts.concrete_fields, opts.private_fields, opts.many_to_many):
+            # if not getattr(f, "editable", False):
+            #     continue
+            if fields is not None and f.name not in fields:
+                continue
+            if exclude and f.name in exclude:
+                continue
+            data[f.name] = f.value_from_object(self)
+        # return data
+        # response = model_to_dict(self, fields=fields, exclude=exclude)
+        data.update(append)
+        return data
 
     class Meta:
         """ 
@@ -88,11 +113,23 @@ class SubscriberBucket(models.Model):
 
     def to_dict(self, fields=None, exclude=None, append={}):
         """ 
+        OVERWRITE of `model_to_dict`
         exlusive method for return dict of model to show in API output
         """
-        response = model_to_dict(self, fields=fields, exclude=exclude)
-        response.update(append)
-        return response
+        opts = self._meta
+        data = {}
+        for f in chain(opts.concrete_fields, opts.private_fields, opts.many_to_many):
+            # if not getattr(f, "editable", False):
+            #     continue
+            if fields is not None and f.name not in fields:
+                continue
+            if exclude and f.name in exclude:
+                continue
+            data[f.name] = f.value_from_object(self)
+        # return data
+        # response = model_to_dict(self, fields=fields, exclude=exclude)
+        data.update(append)
+        return data
 
     class Meta:
         """ 
@@ -114,11 +151,32 @@ class BucketTask(models.Model):
 
     def to_dict(self, fields=None, exclude=None, append={}):
         """ 
+        OVERWRITE of `model_to_dict`
         exlusive method for return dict of model to show in API output
         """
-        response = model_to_dict(self, fields=fields, exclude=exclude)
-        response.update(append)
-        return response
+        opts = self._meta
+        data = {}
+        for f in chain(opts.concrete_fields, opts.private_fields, opts.many_to_many):
+            # if not getattr(f, "editable", False):
+            #     continue
+            if fields is not None and f.name not in fields:
+                continue
+            if exclude and f.name in exclude:
+                continue
+            data[f.name] = f.value_from_object(self)
+        # return data
+        # response = model_to_dict(self, fields=fields, exclude=exclude)
+        data.update(append)
+        return data
+
+    def get_list_of_task(self):
+        """ 
+        exlusive method for return current SubscriberBuckets' list of bucket id
+        """
+        # self.objects.filter(owner=request.user, active=True)
+        # return self.objects.filter(subs=request.user, active=True)
+        # [sub_buckets.bucket.id for sub_buckets in subscriberbuckets]
+
 
     class Meta:
         """ 
