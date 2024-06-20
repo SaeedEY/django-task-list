@@ -134,6 +134,20 @@ def buckets_index(request):
         return ResponseOut(status='403', message='Access denied !')
     return JsonResponse(views.buckets_index(request))
 
+@api.get('/buckets/history/{bucket_id}', response= ResponseOut, tags=["Buckets"])
+def bucket_history(request , bucket_id):
+    """ 
+    To get the bucket change history:
+     - **id** (type of uuid `[a-Z0-9]{8}-[a-Z0-9]{4}-[a-Z0-9]{4}-[a-Z0-9]{12}]`)
+     - **bucket** (type of uuid `[a-Z0-9]{8}-[a-Z0-9]{4}-[a-Z0-9]{4}-[a-Z0-9]{12}]`)
+     - **field** (type of string)
+     - **before** (type of string)
+     - **after** (type of string)
+    """
+    if not request.user.is_authenticated:   # Supposed to moved in some other layers 
+        return ResponseOut(status='403', message='Access denied !')
+    return JsonResponse(views.bucket_history(request, bucket_id))
+
 @api.post('/buckets/new', response= ResponseOut, tags=["Buckets"])
 def bucket_add(request , payload: BucketIn):
     """

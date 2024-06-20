@@ -304,6 +304,39 @@
                 ]
             }
         },
+        "/api/buckets/history/{bucket_id}": {
+            "get": {
+                "operationId": "taskmodule_api_bucket_history",
+                "summary": "Bucket History",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "bucket_id",
+                        "schema": {
+                            "title": "Bucket Id",
+                            "type": "string"
+                        },
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseOut"
+                                }
+                            }
+                        }
+                    }
+                },
+                "description": "To get the bucket change history:\n - **id** (type of uuid `[a-Z0-9]{8}-[a-Z0-9]{4}-[a-Z0-9]{4}-[a-Z0-9]{12}]`)\n - **bucket** (type of uuid `[a-Z0-9]{8}-[a-Z0-9]{4}-[a-Z0-9]{4}-[a-Z0-9]{12}]`)\n - **field** (type of string)\n - **before** (type of string)\n - **after** (type of string)",
+                "tags": [
+                    "Buckets"
+                ]
+            }
+        },
         "/api/buckets/new": {
             "post": {
                 "operationId": "taskmodule_api_bucket_add",

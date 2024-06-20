@@ -2,13 +2,15 @@
 Module listing
 """
 from typing import List
+import uuid
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
 from django.contrib.auth import authenticate as django_authenticate, \
     login as django_login, logout as django_logout
 from django.db import transaction
-from .models import Task, Bucket, Subscriber, SubscriberBucket, BucketTask
-from .schemas import ResponseOut
+from .models import Task, Bucket, Subscriber, SubscriberBucket, BucketTask, \
+    BucketHistory
+from .schemas import ResponseOut, BucketRemove
 
 
 # LOGGING KEYWORD REFERENCE https://sematext.com/blog/logging-levels/
@@ -250,6 +252,26 @@ def task_edit(request, payload=None) -> ResponseOut:
 ## BUCKETs - supposed to be moved to somewhere more sctructured in refactor :D
 ##############################################################################
 
+def _is_valid_uuid(the_uuid):
+    """
+    UTILITY FUNCTION
+        To check the validity of entered UUID
+    """
+    try:
+        uuid.UUID(str(the_uuid))
+        return True
+    except ValueError:
+        return False
+
+def _is_bucket_of_user(request, bucket_id, active=True) -> bool :
+    """
+    UTILITY FUNCTION
+        To check if the given bucket_id is within current logged in user's accessibility or not
+    """
+    if bucket_id is not None and _is_valid_uuid(bucket_id):
+        return SubscriberBucket.objects.filter(subs=request.user, active=active).exists()
+    return False
+
 # Should be moved to something more enhanced structure
 def buckets_index(request) -> ResponseOut:
     """
@@ -266,6 +288,20 @@ def buckets_index(request) -> ResponseOut:
         print(err) # Info Logging purpose
     return response.model_dump()
 
+def bucket_history(request, payload) -> ResponseOut:
+    """
+    Getting current Bucket change history
+     - Input: payload<BucketRemoveSchema>
+     - Output: List of Buckets changes
+    """
+    response = ResponseOut()
+    if _is_bucket_of_user(request, payload):
+        response.result = [bh.to_dict(exclude=['id','bucket']) for bh in BucketHistory.objects.filter(bucket= payload)]
+    else:
+        response.status = 404
+        response.message = [f"Bucket '{payload}' not found !"]
+    return response.model_dump()
+
 def bucket_add(request, payload=None) -> ResponseOut:
     """ 
     Adding Bucket
@@ -275,8 +311,12 @@ def bucket_add(request, payload=None) -> ResponseOut:
     response = ResponseOut()
     try:
         with transaction.atomic():
-            new_bucket = Bucket.objects.create(name = payload.name, description = payload.description, owner= request.user)
-            SubscriberBucket.objects.create(subs = request.user, bucket= new_bucket)
+            new_bucket = Bucket.objects.create(name=payload.name, description=payload.description, owner=request.user)
+            SubscriberBucket.objects.create(subs=request.user, bucket=new_bucket)
+            ## TODO: make exclude list seperated from this part ==> make constant
+            ## TODO: the owner might be needed to be removed from list in case of ownership of bucket moved, it might be needed to previewed ...
+            for (field,value) in new_bucket.to_dict(exclude=['id','created','active','owner']).items():
+                BucketHistory.objects.create(bucket=new_bucket, field=field, after=value)
             response.result = [new_bucket.to_dict(fields=['id','name','description','created'])] # Issue id not parsed out due to Model id is not editable
     except IntegrityError as err:
         response.status = 400
@@ -298,7 +338,10 @@ def bucket_edit(request, payload=None) -> ResponseOut:
     try:
         with transaction.atomic():
             current_bucket = Bucket.objects.get(id = payload.id, owner= request.user)
-            current_bucket.name, current_bucket.description, current_bucket.active = payload.name, payload.description, payload.active
+            for (field,new_value) in payload :
+                if getattr(current_bucket, field) != new_value:
+                    BucketHistory.objects.create(bucket=current_bucket, field=field, before=getattr(current_bucket, field), after=new_value)
+                    setattr(current_bucket, field, new_value)
             current_bucket.save()
             response.result = [current_bucket.to_dict(exclude=['active'])]
     except IntegrityError as err:
@@ -327,6 +370,7 @@ def bucket_deactivate(request, payload=None) -> ResponseOut:
         # given_bucket = Bucket.objects.get(id=payload.bucket, owner=request.user)
         with transaction.atomic():
             current_buckettasks = BucketTask.objects.filter(bucket= payload.id, owner= request.user, active= True)
+            ## TODO: Check if bucket on deactivation needed to be recorded as BucketHistory for user while there is no action happening in Bucket but SubscriberBucket !
             current_subscriberbuckets = SubscriberBucket.objects.filter(bucket= payload.id, subs= request.user, active= True)
             assert current_subscriberbuckets.update(active= False), f"Bucket {payload.id} delete failed or already deactivated !"
             current_buckettasks.update(active= False)

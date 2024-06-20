@@ -61,6 +61,37 @@ class Bucket(models.Model):
             models.UniqueConstraint(fields=['name','owner'], name="%(app_label)s_%(class)s_unique")
         ]
 
+class BucketHistory(models.Model):
+    """ 
+    Bucket History Model
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    bucket = models.ForeignKey(Bucket, on_delete=models.CASCADE)
+    field = models.TextField(max_length=32)
+    before = models.TextField(max_length=64, null=True)
+    after  = models.TextField(max_length=64)
+    created = models.DateTimeField(default=now,editable=False)
+
+    def to_dict(self, fields=None, exclude=None, append={}):
+        """ 
+        OVERWRITE of `model_to_dict`
+        exlusive method for return dict of model to show in API output
+        """
+        opts = self._meta
+        data = {}
+        for f in chain(opts.concrete_fields, opts.private_fields, opts.many_to_many):
+            # if not getattr(f, "editable", False):
+            #     continue
+            if fields is not None and f.name not in fields:
+                continue
+            if exclude and f.name in exclude:
+                continue
+            data[f.name] = f.value_from_object(self)
+        # return data
+        # response = model_to_dict(self, fields=fields, exclude=exclude)
+        data.update(append)
+        return data
+
 class Task(models.Model):
     """ 
     Task class
@@ -101,10 +132,43 @@ class Task(models.Model):
             models.UniqueConstraint(fields=['name','owner'], name="%(app_label)s_%(class)s_unique")
         ]
 
+class TaskHistory(models.Model):
+    """ 
+    Task History Model
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    task = models.ForeignKey(Task, on_delete=models.CASCADE)
+    bucket = models.ForeignKey(Bucket, on_delete=models.CASCADE)
+    field = models.TextField(max_length=32)
+    before = models.TextField(max_length=64)
+    after  = models.TextField(max_length=64)
+    created = models.DateTimeField(default=now,editable=False)
+
+    def to_dict(self, fields=None, exclude=None, append={}):
+        """ 
+        OVERWRITE of `model_to_dict`
+        exlusive method for return dict of model to show in API output
+        """
+        opts = self._meta
+        data = {}
+        for f in chain(opts.concrete_fields, opts.private_fields, opts.many_to_many):
+            # if not getattr(f, "editable", False):
+            #     continue
+            if fields is not None and f.name not in fields:
+                continue
+            if exclude and f.name in exclude:
+                continue
+            data[f.name] = f.value_from_object(self)
+        # return data
+        # response = model_to_dict(self, fields=fields, exclude=exclude)
+        data.update(append)
+        return data
+
 # Bucket cross users being shared
 class SubscriberBucket(models.Model):
     """ 
     SubscriberBucket class
+    ??? TO MAKE CLEAR IF CHANING BUCKET'S ACTIVATION STATUS, CHANGE THIS RELATED RECORD EITHER OR NOT ???
     """
     subs = models.ForeignKey(Subscriber, on_delete=models.CASCADE)
     bucket = models.ForeignKey(Bucket, on_delete=models.CASCADE)

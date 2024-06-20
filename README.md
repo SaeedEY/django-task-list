@@ -10,10 +10,11 @@ below concepts are implemented:
 - Multi Bucket Tasks
 - Role Based Tasks / Role Based Buckets
 - Subscriber Changes' History
-- Bucket Changes' History / Task Changes' History
+- Task Changes' History
 
 ##### Current Features 
-- DeleteTask / DeleteBucket <sup>new</sup>
+- Bucket Changes' History <sup>new</sup>
+- DeleteTask / DeleteBucket
 - EditTask / EditBucket
 - Register / Login / Authenticate / Logout
 - CreateTask / CreateBucket
